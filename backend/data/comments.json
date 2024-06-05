@@ -1,1 +1,9 @@
-[]
+[
+  {
+    "username": "milka",
+    "factoryName": "Ferrero Rocher",
+    "text": "A wonderful factory!",
+    "rating": 5,
+    "deleted": false
+  }
+]

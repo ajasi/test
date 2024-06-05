@@ -1,0 +1,609 @@
+openapi: 3.0.0
+info:
+  title: Chocolate Factory API
+  version: 1.0.0
+  description: API for managing chocolate factories, chocolates, users, carts, purchases, and comments.
+servers:
+  - url: http://localhost:3000
+    description: Local server
+
+paths:
+  /:
+    get:
+      summary: Welcome message
+      responses:
+        '200':
+          description: Successful response
+          content:
+            text/plain:
+              schema:
+                type: string
+
+  /register:
+    post:
+      summary: Register a new user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/User'
+      responses:
+        '201':
+          description: User registered
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '400':
+          description: Username already exists
+
+  /login:
+    post:
+      summary: User login
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Login'
+      responses:
+        '200':
+          description: User logged in
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '401':
+          description: Invalid credentials
+
+  /users/{username}:
+    put:
+      summary: Update user information
+      parameters:
+        - in: path
+          name: username
+          required: true
+          schema:
+            type: string
+          description: The username of the user to update
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/User'
+      responses:
+        '200':
+          description: User updated
+        '404':
+          description: User not found
+    delete:
+      summary: Logically delete a user
+      parameters:
+        - in: path
+          name: username
+          required: true
+          schema:
+            type: string
+          description: The username of the user to delete
+      responses:
+        '200':
+          description: User deleted
+        '404':
+          description: User not found
+
+  /factories:
+    get:
+      summary: Get all factories
+      responses:
+        '200':
+          description: A list of factories
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Factory'
+    post:
+      summary: Create a new factory
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Factory'
+      responses:
+        '201':
+          description: Factory created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Factory'
+
+  /factories/{name}:
+    get:
+      summary: Get a factory by name
+      parameters:
+        - in: path
+          name: name
+          required: true
+          schema:
+            type: string
+          description: The name of the factory
+      responses:
+        '200':
+          description: A factory object
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Factory'
+        '404':
+          description: Factory not found
+    delete:
+      summary: Logically delete a factory
+      parameters:
+        - in: path
+          name: name
+          required: true
+          schema:
+            type: string
+          description: The name of the factory
+      responses:
+        '200':
+          description: Factory deleted
+        '404':
+          description: Factory not found
+
+  /factories/{name}/chocolates:
+    get:
+      summary: Get all chocolates in a factory
+      parameters:
+        - in: path
+          name: name
+          required: true
+          schema:
+            type: string
+          description: The name of the factory
+      responses:
+        '200':
+          description: A list of chocolates
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Chocolate'
+        '404':
+          description: Factory not found
+
+  /chocolates:
+    get:
+      summary: Get all chocolates
+      responses:
+        '200':
+          description: A list of chocolates
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Chocolate'
+    post:
+      summary: Create a new chocolate
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Chocolate'
+      responses:
+        '201':
+          description: Chocolate created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Chocolate'
+
+  /chocolates/{name}:
+    get:
+      summary: Get a chocolate by name
+      parameters:
+        - in: path
+          name: name
+          required: true
+          schema:
+            type: string
+          description: The name of the chocolate
+      responses:
+        '200':
+          description: A chocolate object
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Chocolate'
+        '404':
+          description: Chocolate not found
+    put:
+      summary: Update a chocolate by name
+      parameters:
+        - in: path
+          name: name
+          required: true
+          schema:
+            type: string
+          description: The name of the chocolate
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Chocolate'
+      responses:
+        '200':
+          description: Chocolate updated
+        '404':
+          description: Chocolate not found
+    delete:
+      summary: Logically delete a chocolate
+      parameters:
+        - in: path
+          name: name
+          required: true
+          schema:
+            type: string
+          description: The name of the chocolate
+      responses:
+        '200':
+          description: Chocolate deleted
+        '404':
+          description: Chocolate not found
+
+  /carts:
+    post:
+      summary: Create a new cart
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Cart'
+      responses:
+        '201':
+          description: Cart created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Cart'
+
+  /carts/{username}:
+    get:
+      summary: Get a cart by username
+      parameters:
+        - in: path
+          name: username
+          required: true
+          schema:
+            type: string
+          description: The username of the cart owner
+      responses:
+        '200':
+          description: A cart object
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Cart'
+        '404':
+          description: Cart not found
+    delete:
+      summary: Logically delete a cart
+      parameters:
+        - in: path
+          name: username
+          required: true
+          schema:
+            type: string
+          description: The username of the cart owner
+      responses:
+        '200':
+          description: Cart deleted
+        '404':
+          description: Cart not found
+
+  /carts/factory/{factoryName}:
+    get:
+      summary: Get all carts by factory
+      parameters:
+        - in: path
+          name: factoryName
+          required: true
+          schema:
+            type: string
+          description: The name of the factory
+      responses:
+        '200':
+          description: A list of carts
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Cart'
+        '404':
+          description: Factory not found
+
+  /purchases:
+    post:
+      summary: Create a new purchase
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Purchase'
+      responses:
+        '201':
+          description: Purchase created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Purchase'
+
+  /purchases/{id}:
+    get:
+      summary: Get a purchase by ID
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+          description: The ID of the purchase
+      responses:
+        '200':
+          description: A purchase object
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Purchase'
+        '404':
+          description: Purchase not found
+    delete:
+      summary: Logically delete a purchase
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+          description: The ID of the purchase
+      responses:
+        '200':
+          description: Purchase deleted
+        '404':
+          description: Purchase not found
+
+  /purchases/factory/{factoryName}:
+    get:
+      summary: Get all purchases by factory
+      parameters:
+        - in: path
+          name: factoryName
+          required: true
+          schema:
+            type: string
+          description: The name of the factory
+      responses:
+        '200':
+          description: A list of purchases
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Purchase'
+        '404':
+          description: Factory not found
+
+  /comments:
+    post:
+      summary: Create a new comment
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Comment'
+      responses:
+        '201':
+          description: Comment created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Comment'
+
+  /comments/user/{username}:
+    get:
+      summary: Get all comments by user
+      parameters:
+        - in: path
+          name: username
+          required: true
+          schema:
+            type: string
+          description: The username of the user
+      responses:
+        '200':
+          description: A list of comments
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Comment'
+        '404':
+          description: User not found
+
+  /comments/factory/{factoryName}:
+    get:
+      summary: Get all comments by factory
+      parameters:
+        - in: path
+          name: factoryName
+          required: true
+          schema:
+            type: string
+          description: The name of the factory
+      responses:
+        '200':
+          description: A list of comments
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Comment'
+        '404':
+          description: Factory not found
+
+  /comments/{id}:
+    delete:
+      summary: Logically delete a comment
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+          description: The ID of the comment
+      responses:
+        '200':
+          description: Comment deleted
+        '404':
+          description: Comment not found
+
+components:
+  schemas:
+    User:
+      type: object
+      properties:
+        username:
+          type: string
+        password:
+          type: string
+        firstName:
+          type: string
+        lastName:
+          type: string
+        gender:
+          type: string
+        birthDate:
+          type: string
+        role:
+          type: string
+        deleted:
+          type: boolean
+
+    Login:
+      type: object
+      properties:
+        username:
+          type: string
+        password:
+          type: string
+
+    Factory:
+      type: object
+      properties:
+        name:
+          type: string
+        location:
+          type: string
+        workingHours:
+          type: string
+        status:
+          type: string
+        logo:
+          type: string
+        managerUsername:
+          type: string
+        rating:
+          type: number
+        deleted:
+          type: boolean
+
+    Chocolate:
+      type: object
+      properties:
+        name:
+          type: string
+        price:
+          type: number
+        type:
+          type: string
+        factoryName:
+          type: string
+        kind:
+          type: string
+        weight:
+          type: number
+        description:
+          type: string
+        image:
+          type: string
+        status:
+          type: string
+        quantity:
+          type: number
+        deleted:
+          type: boolean
+
+    Cart:
+      type: object
+      properties:
+        username:
+          type: string
+        chocolates:
+          type: array
+          items:
+            $ref: '#/components/schemas/Chocolate'
+        totalPrice:
+          type: number
+        deleted:
+          type: boolean
+
+    Purchase:
+      type: object
+      properties:
+        id:
+          type: string
+        chocolates:
+          type: array
+          items:
+            $ref: '#/components/schemas/Chocolate'
+        factoryName:
+          type: string
+        date:
+          type: string
+        totalPrice:
+          type: number
+        username:
+          type: string
+        status:
+          type: string
+        deleted:
+          type: boolean
+
+    Comment:
+      type: object
+      properties:
+        username:
+          type: string
+        factoryName:
+          type: string
+        text:
+          type: string
+        rating:
+          type: number
+        deleted:
+          type: boolean

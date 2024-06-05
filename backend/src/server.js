@@ -14,8 +14,59 @@ app.get("/", (req, res) => {
 });
 
 // Load data
+const users = JSON.parse(fs.readFileSync("./data/users.json", "utf-8"));
 const factories = JSON.parse(fs.readFileSync("./data/factories.json", "utf-8"));
 const chocolates = JSON.parse(fs.readFileSync("./data/chocolates.json", "utf-8"));
+const carts = JSON.parse(fs.readFileSync("./data/carts.json", "utf-8"));
+const purchases = JSON.parse(fs.readFileSync("./data/purchases.json", "utf-8"));
+const comments = JSON.parse(fs.readFileSync("./data/comments.json", "utf-8"));
+
+// User routes
+app.post("/register", (req, res) => {
+  const { username, password, firstName, lastName, gender, birthDate } = req.body;
+  if (users.find(user => user.username === username)) {
+    return res.status(400).send('Username already exists');
+  }
+  const newUser = { username, password, firstName, lastName, gender, birthDate, role: 'Kupac', deleted: false };
+  users.push(newUser);
+  fs.writeFileSync('./data/users.json', JSON.stringify(users, null, 2));
+  res.status(201).send(newUser);
+});
+
+app.post("/login", (req, res) => {
+  const { username, password } = req.body;
+  const user = users.find(user => user.username === username && user.password === password && !user.deleted);
+  if (!user) {
+    return res.status(401).send('Invalid credentials');
+  }
+  res.send(user);
+});
+
+app.put("/users/:username", (req, res) => {
+  const user = users.find(u => u.username === req.params.username && !u.deleted);
+  if (!user) {
+    return res.status(404).send('User not found');
+  }
+  const { password, firstName, lastName, gender, birthDate } = req.body;
+  if (password) user.password = password;
+  if (firstName) user.firstName = firstName;
+  if (lastName) user.lastName = lastName;
+  if (gender) user.gender = gender;
+  if (birthDate) user.birthDate = birthDate;
+
+  fs.writeFileSync('./data/users.json', JSON.stringify(users, null, 2));
+  res.send('User updated');
+});
+
+app.delete("/users/:username", (req, res) => {
+  const user = users.find(u => u.username === req.params.username);
+  if (!user) {
+    return res.status(404).send('User not found');
+  }
+  user.deleted = true;
+  fs.writeFileSync('./data/users.json', JSON.stringify(users, null, 2));
+  res.send('User deleted');
+});
 
 // Factories routes
 app.post("/factories", (req, res) => {
@@ -48,7 +99,6 @@ app.get("/factories/:name", (req, res) => {
   res.send(factory);
 });
 
-// Logical delete for factories
 app.delete("/factories/:name", (req, res) => {
   const factory = factories.find((f) => f.name === req.params.name);
   if (!factory) {
@@ -93,7 +143,6 @@ app.get("/chocolates/:name", (req, res) => {
   res.send(chocolate);
 });
 
-// New route: Get all chocolates in a specific factory
 app.get("/factories/:name/chocolates", (req, res) => {
   const factory = factories.find((f) => f.name === req.params.name && !f.deleted);
   if (!factory) {
@@ -122,7 +171,6 @@ app.put("/chocolates/:name", (req, res) => {
   res.send("Chocolate updated");
 });
 
-// Logical delete for chocolates
 app.delete("/chocolates/:name", (req, res) => {
   const chocolate = chocolates.find((c) => c.name === req.params.name);
   if (!chocolate) {
@@ -131,6 +179,129 @@ app.delete("/chocolates/:name", (req, res) => {
   chocolate.deleted = true;
   fs.writeFileSync("./data/chocolates.json", JSON.stringify(chocolates, null, 2));
   res.send("Chocolate deleted");
+});
+
+// Cart routes
+app.post("/carts", (req, res) => {
+  const { username, chocolates } = req.body;
+  const newCart = {
+    username,
+    chocolates,
+    totalPrice: chocolates.reduce((sum, c) => sum + c.price * c.quantity, 0),
+    deleted: false,
+  };
+  carts.push(newCart);
+  fs.writeFileSync("./data/carts.json", JSON.stringify(carts, null, 2));
+  res.status(201).send(newCart);
+});
+
+app.get("/carts/:username", (req, res) => {
+  const cart = carts.find((c) => c.username === req.params.username && !c.deleted);
+  if (!cart) {
+    return res.status(404).send("Cart not found");
+  }
+  res.send(cart);
+});
+
+app.get("/carts/factory/:factoryName", (req, res) => {
+  const factoryCarts = carts.filter((c) => c.chocolates.some(choc => choc.factoryName === req.params.factoryName) && !c.deleted);
+  res.send(factoryCarts);
+});
+
+app.delete("/carts/:username", (req, res) => {
+  const cart = carts.find((c) => c.username === req.params.username);
+  if (!cart) {
+    return res.status(404).send("Cart not found");
+  }
+  cart.deleted = true;
+  fs.writeFileSync("./data/carts.json", JSON.stringify(carts, null, 2));
+  res.send("Cart deleted");
+});
+
+// Purchases routes
+app.post("/purchases", (req, res) => {
+  const { id, chocolates, factoryName, date, totalPrice, username, status } = req.body;
+  const newPurchase = {
+    id,
+    chocolates,
+    factoryName,
+    date,
+    totalPrice,
+    username,
+    status,
+    deleted: false,
+  };
+  purchases.push(newPurchase);
+  fs.writeFileSync("./data/purchases.json", JSON.stringify(purchases, null, 2));
+  res.status(201).send(newPurchase);
+});
+
+app.get("/purchases", (req, res) => {
+  const activePurchases = purchases.filter((p) => !p.deleted);
+  res.send(activePurchases);
+});
+
+app.get("/purchases/:id", (req, res) => {
+  const purchase = purchases.find((p) => p.id === req.params.id && !p.deleted);
+  if (!purchase) {
+    return res.status(404).send("Purchase not found");
+  }
+  res.send(purchase);
+});
+
+app.get("/purchases/factory/:factoryName", (req, res) => {
+  const factoryPurchases = purchases.filter((p) => p.factoryName === req.params.factoryName && !p.deleted);
+  res.send(factoryPurchases);
+});
+
+app.delete("/purchases/:id", (req, res) => {
+  const purchase = purchases.find((p) => p.id === req.params.id);
+  if (!purchase) {
+    return res.status(404).send("Purchase not found");
+  }
+  purchase.deleted = true;
+  fs.writeFileSync("./data/purchases.json", JSON.stringify(purchases, null, 2));
+  res.send("Purchase deleted");
+});
+
+// Comments routes
+app.post("/comments", (req, res) => {
+  const { username, factoryName, text, rating } = req.body;
+  const newComment = {
+    username,
+    factoryName,
+    text,
+    rating,
+    deleted: false,
+  };
+  comments.push(newComment);
+  fs.writeFileSync("./data/comments.json", JSON.stringify(comments, null, 2));
+  res.status(201).send(newComment);
+});
+
+app.get("/comments", (req, res) => {
+  const activeComments = comments.filter((c) => !c.deleted);
+  res.send(activeComments);
+});
+
+app.get("/comments/user/:username", (req, res) => {
+  const userComments = comments.filter((c) => c.username === req.params.username && !c.deleted);
+  res.send(userComments);
+});
+
+app.get("/comments/factory/:factoryName", (req, res) => {
+  const factoryComments = comments.filter((c) => c.factoryName === req.params.factoryName && !c.deleted);
+  res.send(factoryComments);
+});
+
+app.delete("/comments/:id", (req, res) => {
+  const comment = comments.find((c) => c.id === req.params.id); // Pretpostavlja se da svaki komentar ima jedinstveni ID
+  if (!comment) {
+    return res.status(404).send("Comment not found");
+  }
+  comment.deleted = true;
+  fs.writeFileSync("./data/comments.json", JSON.stringify(comments, null, 2));
+  res.send("Comment deleted");
 });
 
 app.listen(port, () => {

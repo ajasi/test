@@ -7,7 +7,7 @@
     "logo": "https://bcassetcdn.com/public/blog/wp-content/uploads/2021/10/18190510/Ferrero-Rocher.png",
     "managerUsername": "manager1",
     "rating": "4",
-    "chocolates": []
+    "deleted": false
   },
   {
     "name": "Lindt & Sprüngli",
@@ -17,7 +17,7 @@
     "logo": "https://bcassetcdn.com/public/blog/wp-content/uploads/2021/10/18190854/Lindt.png",
     "managerUsername": "manager2",
     "rating": "5",
-    "chocolates": []
+    "deleted": false
   },
   {
     "name": "Dove Chocolate",
@@ -27,7 +27,7 @@
     "logo": "https://bcassetcdn.com/public/blog/wp-content/uploads/2021/10/18191027/Dove.png",
     "managerUsername": "manager2",
     "rating": "5",
-    "chocolates": []
+    "deleted": false
   },
   {
     "name": "Fran's Chocolates",
@@ -37,7 +37,7 @@
     "logo": "https://bcassetcdn.com/public/blog/wp-content/uploads/2021/10/18191438/Frans-Chocolates.png",
     "managerUsername": "manager2",
     "rating": "5",
-    "chocolates": []
+    "deleted": false
   },
   {
     "name": "Ritter Sport",
@@ -47,7 +47,7 @@
     "logo": "https://bcassetcdn.com/public/blog/wp-content/uploads/2021/10/18191514/ritter-sport.png",
     "managerUsername": "manager2",
     "rating": "5",
-    "chocolates": []
+    "deleted": false
   },
   {
     "name": "Teuscher",
@@ -57,6 +57,16 @@
     "logo": "https://bcassetcdn.com/public/blog/wp-content/uploads/2021/10/18191535/Teuscher.png",
     "managerUsername": "manager2",
     "rating": "5",
-    "chocolates": []
+    "deleted": false
+  },
+  {
+    "name": "Choco Factory",
+    "location": "New York, NY",
+    "workingHours": "9am - 5pm",
+    "status": "Open",
+    "logo": "logo_url",
+    "managerUsername": "manager1",
+    "rating": 0,
+    "deleted": false
   }
 ]

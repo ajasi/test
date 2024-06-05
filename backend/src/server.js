@@ -15,6 +15,8 @@ app.get("/", (req, res) => {
 
 // Load data
 const users = JSON.parse(fs.readFileSync("./data/users.json", "utf-8"));
+const customerTypes = JSON.parse(fs.readFileSync("./data/customerTypes.json", "utf-8"));
+const locations = JSON.parse(fs.readFileSync("./data/locations.json", "utf-8"));
 const factories = JSON.parse(fs.readFileSync("./data/factories.json", "utf-8"));
 const chocolates = JSON.parse(fs.readFileSync("./data/chocolates.json", "utf-8"));
 const carts = JSON.parse(fs.readFileSync("./data/carts.json", "utf-8"));
@@ -68,12 +70,87 @@ app.delete("/users/:username", (req, res) => {
   res.send('User deleted');
 });
 
+// Customer Type routes
+app.post("/customerTypes", (req, res) => {
+  const { type, discount, targetPoints } = req.body;
+  const newCustomerType = { type, discount, targetPoints, deleted: false };
+  customerTypes.push(newCustomerType);
+  fs.writeFileSync('./data/customerTypes.json', JSON.stringify(customerTypes, null, 2));
+  res.status(201).send(newCustomerType);
+});
+
+app.get("/customerTypes", (req, res) => {
+  const activeCustomerTypes = customerTypes.filter((ct) => !ct.deleted);
+  res.send(activeCustomerTypes);
+});
+
+app.put("/customerTypes/:type", (req, res) => {
+  const customerType = customerTypes.find(ct => ct.type === req.params.type && !ct.deleted);
+  if (!customerType) {
+    return res.status(404).send('Customer Type not found');
+  }
+  const { discount, targetPoints } = req.body;
+  if (discount) customerType.discount = discount;
+  if (targetPoints) customerType.targetPoints = targetPoints;
+
+  fs.writeFileSync('./data/customerTypes.json', JSON.stringify(customerTypes, null, 2));
+  res.send('Customer Type updated');
+});
+
+app.delete("/customerTypes/:type", (req, res) => {
+  const customerType = customerTypes.find(ct => ct.type === req.params.type);
+  if (!customerType) {
+    return res.status(404).send('Customer Type not found');
+  }
+  customerType.deleted = true;
+  fs.writeFileSync('./data/customerTypes.json', JSON.stringify(customerTypes, null, 2));
+  res.send('Customer Type deleted');
+});
+
+// Location routes
+app.post("/locations", (req, res) => {
+  const { id, longitude, latitude, address } = req.body;
+  const newLocation = { id, longitude, latitude, address, deleted: false };
+  locations.push(newLocation);
+  fs.writeFileSync('./data/locations.json', JSON.stringify(locations, null, 2));
+  res.status(201).send(newLocation);
+});
+
+app.get("/locations", (req, res) => {
+  const activeLocations = locations.filter((loc) => !loc.deleted);
+  res.send(activeLocations);
+});
+
+app.put("/locations/:id", (req, res) => {
+  const location = locations.find(loc => loc.id === parseInt(req.params.id) && !loc.deleted);
+  if (!location) {
+    return res.status(404).send('Location not found');
+  }
+  const { longitude, latitude, address } = req.body;
+  if (longitude) location.longitude = longitude;
+  if (latitude) location.latitude = latitude;
+  if (address) location.address = address;
+
+  fs.writeFileSync('./data/locations.json', JSON.stringify(locations, null, 2));
+  res.send('Location updated');
+});
+
+app.delete("/locations/:id", (req, res) => {
+  const location = locations.find(loc => loc.id === parseInt(req.params.id));
+  if (!location) {
+    return res.status(404).send('Location not found');
+  }
+  location.deleted = true;
+  fs.writeFileSync('./data/locations.json', JSON.stringify(locations, null, 2));
+  res.send('Location deleted');
+});
+
 // Factories routes
 app.post("/factories", (req, res) => {
-  const { name, location, workingHours, status, logo, managerUsername } = req.body;
+  const { name, locationId, workingHours, status, logo, managerUsername } = req.body;
   const newFactory = {
     name,
-    location,
+    locationId,
     workingHours,
     status,
     logo,

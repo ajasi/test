@@ -93,6 +93,134 @@ paths:
         '404':
           description: User not found
 
+  /customerTypes:
+    get:
+      summary: Get all customer types
+      responses:
+        '200':
+          description: A list of customer types
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/CustomerType'
+    post:
+      summary: Create a new customer type
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CustomerType'
+      responses:
+        '201':
+          description: Customer Type created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomerType'
+
+  /customerTypes/{type}:
+    put:
+      summary: Update a customer type by type
+      parameters:
+        - in: path
+          name: type
+          required: true
+          schema:
+            type: string
+          description: The type of the customer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CustomerType'
+      responses:
+        '200':
+          description: Customer Type updated
+        '404':
+          description: Customer Type not found
+    delete:
+      summary: Logically delete a customer type
+      parameters:
+        - in: path
+          name: type
+          required: true
+          schema:
+            type: string
+          description: The type of the customer
+      responses:
+        '200':
+          description: Customer Type deleted
+        '404':
+          description: Customer Type not found
+
+  /locations:
+    get:
+      summary: Get all locations
+      responses:
+        '200':
+          description: A list of locations
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Location'
+    post:
+      summary: Create a new location
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Location'
+      responses:
+        '201':
+          description: Location created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Location'
+
+  /locations/{id}:
+    put:
+      summary: Update a location by ID
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+          description: The ID of the location
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Location'
+      responses:
+        '200':
+          description: Location updated
+        '404':
+          description: Location not found
+    delete:
+      summary: Logically delete a location
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+          description: The ID of the location
+      responses:
+        '200':
+          description: Location deleted
+        '404':
+          description: Location not found
+
   /factories:
     get:
       summary: Get all factories
@@ -512,12 +640,38 @@ components:
         password:
           type: string
 
+    CustomerType:
+      type: object
+      properties:
+        type:
+          type: string
+        discount:
+          type: number
+        targetPoints:
+          type: integer
+        deleted:
+          type: boolean
+
+    Location:
+      type: object
+      properties:
+        id:
+          type: string
+        longitude:
+          type: number
+        latitude:
+          type: number
+        address:
+          type: string
+        deleted:
+          type: boolean
+
     Factory:
       type: object
       properties:
         name:
           type: string
-        location:
+        locationId:
           type: string
         workingHours:
           type: string

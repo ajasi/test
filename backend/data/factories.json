@@ -1,7 +1,7 @@
 [
   {
     "name": "Ferrero Rocher",
-    "location": "Rome, Italy",
+    "locationId": 1,
     "workingHours": "9am - 5pm",
     "status": "Open",
     "logo": "https://bcassetcdn.com/public/blog/wp-content/uploads/2021/10/18190510/Ferrero-Rocher.png",
@@ -11,7 +11,7 @@
   },
   {
     "name": "Lindt & Sprüngli",
-    "location": "Munich, Germany",
+    "locationId": 1,
     "workingHours": "9am - 5pm",
     "status": "Open",
     "logo": "https://bcassetcdn.com/public/blog/wp-content/uploads/2021/10/18190854/Lindt.png",
@@ -21,7 +21,7 @@
   },
   {
     "name": "Dove Chocolate",
-    "location": "Vienna, Austria",
+    "locationId": 1,
     "workingHours": "9am - 5pm",
     "status": "Open",
     "logo": "https://bcassetcdn.com/public/blog/wp-content/uploads/2021/10/18191027/Dove.png",
@@ -31,7 +31,7 @@
   },
   {
     "name": "Fran's Chocolates",
-    "location": "Stuttgart, Germany",
+    "locationId": 1,
     "workingHours": "9am - 5pm",
     "status": "Open",
     "logo": "https://bcassetcdn.com/public/blog/wp-content/uploads/2021/10/18191438/Frans-Chocolates.png",
@@ -41,7 +41,7 @@
   },
   {
     "name": "Ritter Sport",
-    "location": "Vienna, Austria",
+    "locationId": 1,
     "workingHours": "9am - 5pm",
     "status": "Open",
     "logo": "https://bcassetcdn.com/public/blog/wp-content/uploads/2021/10/18191514/ritter-sport.png",
@@ -51,7 +51,7 @@
   },
   {
     "name": "Teuscher",
-    "location": "Geneva, Switzerland",
+    "locationId": 1,
     "workingHours": "9am - 5pm",
     "status": "Open",
     "logo": "https://bcassetcdn.com/public/blog/wp-content/uploads/2021/10/18191535/Teuscher.png",
@@ -61,7 +61,17 @@
   },
   {
     "name": "Choco Factory",
-    "location": "New York, NY",
+    "locationId": 1,
+    "workingHours": "9am - 5pm",
+    "status": "Open",
+    "logo": "logo_url",
+    "managerUsername": "manager1",
+    "rating": 0,
+    "deleted": false
+  },
+  {
+    "name": "Simka",
+    "locationId": 1,
     "workingHours": "9am - 5pm",
     "status": "Open",
     "logo": "logo_url",

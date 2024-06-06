@@ -93,134 +93,6 @@ paths:
         '404':
           description: User not found
 
-  /customerTypes:
-    get:
-      summary: Get all customer types
-      responses:
-        '200':
-          description: A list of customer types
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/CustomerType'
-    post:
-      summary: Create a new customer type
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/CustomerType'
-      responses:
-        '201':
-          description: Customer Type created
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/CustomerType'
-
-  /customerTypes/{type}:
-    put:
-      summary: Update a customer type by type
-      parameters:
-        - in: path
-          name: type
-          required: true
-          schema:
-            type: string
-          description: The type of the customer
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/CustomerType'
-      responses:
-        '200':
-          description: Customer Type updated
-        '404':
-          description: Customer Type not found
-    delete:
-      summary: Logically delete a customer type
-      parameters:
-        - in: path
-          name: type
-          required: true
-          schema:
-            type: string
-          description: The type of the customer
-      responses:
-        '200':
-          description: Customer Type deleted
-        '404':
-          description: Customer Type not found
-
-  /locations:
-    get:
-      summary: Get all locations
-      responses:
-        '200':
-          description: A list of locations
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/Location'
-    post:
-      summary: Create a new location
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/Location'
-      responses:
-        '201':
-          description: Location created
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Location'
-
-  /locations/{id}:
-    put:
-      summary: Update a location by ID
-      parameters:
-        - in: path
-          name: id
-          required: true
-          schema:
-            type: string
-          description: The ID of the location
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/Location'
-      responses:
-        '200':
-          description: Location updated
-        '404':
-          description: Location not found
-    delete:
-      summary: Logically delete a location
-      parameters:
-        - in: path
-          name: id
-          required: true
-          schema:
-            type: string
-          description: The ID of the location
-      responses:
-        '200':
-          description: Location deleted
-        '404':
-          description: Location not found
-
   /factories:
     get:
       summary: Get all factories
@@ -268,6 +140,26 @@ paths:
                 $ref: '#/components/schemas/Factory'
         '404':
           description: Factory not found
+    put:
+      summary: Update a factory by name
+      parameters:
+        - in: path
+          name: name
+          required: true
+          schema:
+            type: string
+          description: The name of the factory
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Factory'
+      responses:
+        '200':
+          description: Factory updated
+        '404':
+          description: Factory not found
     delete:
       summary: Logically delete a factory
       parameters:
@@ -304,21 +196,15 @@ paths:
                   $ref: '#/components/schemas/Chocolate'
         '404':
           description: Factory not found
-
-  /chocolates:
-    get:
-      summary: Get all chocolates
-      responses:
-        '200':
-          description: A list of chocolates
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/Chocolate'
     post:
       summary: Create a new chocolate
+      parameters:
+        - in: path
+          name: name
+          required: true
+          schema:
+            type: string
+          description: The name of the factory
       requestBody:
         required: true
         content:
@@ -333,12 +219,18 @@ paths:
               schema:
                 $ref: '#/components/schemas/Chocolate'
 
-  /chocolates/{name}:
+  /factories/{name}/chocolates/{chocolateName}:
     get:
       summary: Get a chocolate by name
       parameters:
         - in: path
           name: name
+          required: true
+          schema:
+            type: string
+          description: The name of the factory
+        - in: path
+          name: chocolateName
           required: true
           schema:
             type: string
@@ -357,6 +249,12 @@ paths:
       parameters:
         - in: path
           name: name
+          required: true
+          schema:
+            type: string
+          description: The name of the factory
+        - in: path
+          name: chocolateName
           required: true
           schema:
             type: string
@@ -380,6 +278,12 @@ paths:
           required: true
           schema:
             type: string
+          description: The name of the factory
+        - in: path
+          name: chocolateName
+          required: true
+          schema:
+            type: string
           description: The name of the chocolate
       responses:
         '200':
@@ -387,136 +291,12 @@ paths:
         '404':
           description: Chocolate not found
 
-  /carts:
-    post:
-      summary: Create a new cart
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/Cart'
-      responses:
-        '201':
-          description: Cart created
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Cart'
-
-  /carts/{username}:
+  /factories/{name}/purchases:
     get:
-      summary: Get a cart by username
+      summary: Get all purchases in a factory
       parameters:
         - in: path
-          name: username
-          required: true
-          schema:
-            type: string
-          description: The username of the cart owner
-      responses:
-        '200':
-          description: A cart object
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Cart'
-        '404':
-          description: Cart not found
-    delete:
-      summary: Logically delete a cart
-      parameters:
-        - in: path
-          name: username
-          required: true
-          schema:
-            type: string
-          description: The username of the cart owner
-      responses:
-        '200':
-          description: Cart deleted
-        '404':
-          description: Cart not found
-
-  /carts/factory/{factoryName}:
-    get:
-      summary: Get all carts by factory
-      parameters:
-        - in: path
-          name: factoryName
-          required: true
-          schema:
-            type: string
-          description: The name of the factory
-      responses:
-        '200':
-          description: A list of carts
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/Cart'
-        '404':
-          description: Factory not found
-
-  /purchases:
-    post:
-      summary: Create a new purchase
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/Purchase'
-      responses:
-        '201':
-          description: Purchase created
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Purchase'
-
-  /purchases/{id}:
-    get:
-      summary: Get a purchase by ID
-      parameters:
-        - in: path
-          name: id
-          required: true
-          schema:
-            type: string
-          description: The ID of the purchase
-      responses:
-        '200':
-          description: A purchase object
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Purchase'
-        '404':
-          description: Purchase not found
-    delete:
-      summary: Logically delete a purchase
-      parameters:
-        - in: path
-          name: id
-          required: true
-          schema:
-            type: string
-          description: The ID of the purchase
-      responses:
-        '200':
-          description: Purchase deleted
-        '404':
-          description: Purchase not found
-
-  /purchases/factory/{factoryName}:
-    get:
-      summary: Get all purchases by factory
-      parameters:
-        - in: path
-          name: factoryName
+          name: name
           required: true
           schema:
             type: string
@@ -532,52 +312,107 @@ paths:
                   $ref: '#/components/schemas/Purchase'
         '404':
           description: Factory not found
-
-  /comments:
     post:
-      summary: Create a new comment
+      summary: Create a new purchase
+      parameters:
+        - in: path
+          name: name
+          required: true
+          schema:
+            type: string
+          description: The name of the factory
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/Comment'
+              $ref: '#/components/schemas/Purchase'
       responses:
         '201':
-          description: Comment created
+          description: Purchase created
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Comment'
+                $ref: '#/components/schemas/Purchase'
 
-  /comments/user/{username}:
+  /factories/{name}/purchases/{id}:
     get:
-      summary: Get all comments by user
+      summary: Get a purchase by ID
       parameters:
         - in: path
-          name: username
+          name: name
           required: true
           schema:
             type: string
-          description: The username of the user
+          description: The name of the factory
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+          description: The ID of the purchase
       responses:
         '200':
-          description: A list of comments
+          description: A purchase object
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/Comment'
+                $ref: '#/components/schemas/Purchase'
         '404':
-          description: User not found
-
-  /comments/factory/{factoryName}:
-    get:
-      summary: Get all comments by factory
+          description: Purchase not found
+    put:
+      summary: Update a purchase by ID
       parameters:
         - in: path
-          name: factoryName
+          name: name
+          required: true
+          schema:
+            type: string
+          description: The name of the factory
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+          description: The ID of the purchase
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Purchase'
+      responses:
+        '200':
+          description: Purchase updated
+        '404':
+          description: Purchase not found
+    delete:
+      summary: Logically delete a purchase
+      parameters:
+        - in: path
+          name: name
+          required: true
+          schema:
+            type: string
+          description: The name of the factory
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+          description: The ID of the purchase
+      responses:
+        '200':
+          description: Purchase deleted
+        '404':
+          description: Purchase not found
+
+  /factories/{name}/comments:
+    get:
+      summary: Get all comments in a factory
+      parameters:
+        - in: path
+          name: name
           required: true
           schema:
             type: string
@@ -593,16 +428,94 @@ paths:
                   $ref: '#/components/schemas/Comment'
         '404':
           description: Factory not found
-
-  /comments/{id}:
-    delete:
-      summary: Logically delete a comment
+    post:
+      summary: Create a new comment
       parameters:
+        - in: path
+          name: name
+          required: true
+          schema:
+            type: string
+          description: The name of the factory
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Comment'
+      responses:
+        '201':
+          description: Comment created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Comment'
+
+  /factories/{name}/comments/{id}:
+    get:
+      summary: Get a comment by ID
+      parameters:
+        - in: path
+          name: name
+          required: true
+          schema:
+            type: string
+          description: The name of the factory
         - in: path
           name: id
           required: true
           schema:
+            type: integer
+          description: The ID of the comment
+      responses:
+        '200':
+          description: A comment object
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Comment'
+        '404':
+          description: Comment not found
+    put:
+      summary: Update a comment by ID
+      parameters:
+        - in: path
+          name: name
+          required: true
+          schema:
             type: string
+          description: The name of the factory
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+          description: The ID of the comment
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Comment'
+      responses:
+        '200':
+          description: Comment updated
+        '404':
+          description: Comment not found
+    delete:
+      summary: Logically delete a comment
+      parameters:
+        - in: path
+          name: name
+          required: true
+          schema:
+            type: string
+          description: The name of the factory
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
           description: The ID of the comment
       responses:
         '200':
@@ -640,39 +553,13 @@ components:
         password:
           type: string
 
-    CustomerType:
-      type: object
-      properties:
-        type:
-          type: string
-        discount:
-          type: number
-        targetPoints:
-          type: integer
-        deleted:
-          type: boolean
-
-    Location:
-      type: object
-      properties:
-        id:
-          type: string
-        longitude:
-          type: number
-        latitude:
-          type: number
-        address:
-          type: string
-        deleted:
-          type: boolean
-
     Factory:
       type: object
       properties:
         name:
           type: string
-        locationId:
-          type: string
+        location:
+          $ref: '#/components/schemas/Location'
         workingHours:
           type: string
         status:
@@ -683,6 +570,32 @@ components:
           type: string
         rating:
           type: number
+        comments:
+          type: array
+          items:
+            $ref: '#/components/schemas/Comment'
+        chocolates:
+          type: array
+          items:
+            $ref: '#/components/schemas/Chocolate'
+        purchases:
+          type: array
+          items:
+            $ref: '#/components/schemas/Purchase'
+        deleted:
+          type: boolean
+
+    Location:
+      type: object
+      properties:
+        id:
+          type: integer
+        longitude:
+          type: number
+        latitude:
+          type: number
+        address:
+          type: string
         deleted:
           type: boolean
 
@@ -694,8 +607,6 @@ components:
         price:
           type: number
         type:
-          type: string
-        factoryName:
           type: string
         kind:
           type: string
@@ -712,31 +623,15 @@ components:
         deleted:
           type: boolean
 
-    Cart:
-      type: object
-      properties:
-        username:
-          type: string
-        chocolates:
-          type: array
-          items:
-            $ref: '#/components/schemas/Chocolate'
-        totalPrice:
-          type: number
-        deleted:
-          type: boolean
-
     Purchase:
       type: object
       properties:
         id:
-          type: string
+          type: integer
         chocolates:
           type: array
           items:
             $ref: '#/components/schemas/Chocolate'
-        factoryName:
-          type: string
         date:
           type: string
         totalPrice:
@@ -752,8 +647,6 @@ components:
       type: object
       properties:
         username:
-          type: string
-        factoryName:
           type: string
         text:
           type: string

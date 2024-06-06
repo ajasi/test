@@ -1,82 +1,202 @@
 [
   {
     "name": "Ferrero Rocher",
-    "locationId": 1,
+    "locationId": {
+      "id": 1,
+      "longitude": 19.833549,
+      "latitude": 45.267136,
+      "address": "Sutjeska 3, Novi Sad, 21000",
+      "deleted": false
+    },
     "workingHours": "9am - 5pm",
     "status": "Open",
     "logo": "https://bcassetcdn.com/public/blog/wp-content/uploads/2021/10/18190510/Ferrero-Rocher.png",
     "managerUsername": "manager1",
     "rating": "4",
+    "comments": [
+      {
+        "username": "Choco fun",
+        "text": "The best factory there is!",
+        "rating": 5,
+        "deleted": false
+      }
+    ],
+    "chocolates": [
+      {
+        "name": "Milk Chocolate",
+        "price": 5,
+        "type": "Regular",
+        "kind": "Milk",
+        "weight": 100,
+        "description": "Delicious milk chocolate",
+        "image": "image_url",
+        "status": "Available",
+        "quantity": 100,
+        "deleted": false
+      },
+      {
+        "name": "Dark Chocolate",
+        "price": 7,
+        "type": "Premium",
+        "kind": "Dark",
+        "weight": 150,
+        "description": "Rich dark chocolate",
+        "image": "image_url_dark",
+        "status": "Available",
+        "quantity": 200,
+        "deleted": false
+      },
+      {
+        "name": "White Chocolate",
+        "price": 6,
+        "type": "Regular",
+        "kind": "White",
+        "weight": 120,
+        "description": "Creamy white chocolate",
+        "image": "image_url_white",
+        "status": "Available",
+        "quantity": 150,
+        "deleted": false
+      },
+      {
+        "name": "Milk Chocolate with Hazelnuts",
+        "price": 8,
+        "type": "Deluxe",
+        "kind": "Milk",
+        "weight": 200,
+        "description": "Milk chocolate with crunchy hazelnuts",
+        "image": "image_url_milk_hazelnuts",
+        "status": "Available",
+        "quantity": 100,
+        "deleted": false
+      }
+    ],
+    "purchases": [
+      {
+        "id": 1,
+        "chocolates": [
+          {
+            "name": "Milk Chocolate",
+            "price": 5,
+            "type": "Regular",
+            "kind": "Milk",
+            "weight": 100,
+            "description": "Delicious milk chocolate",
+            "image": "image_url",
+            "status": "Available",
+            "quantity": 100,
+            "deleted": false
+          }
+        ],
+        "date": "2024-01-01",
+        "totalPrice": 100,
+        "username": "user1",
+        "status": "Active",
+        "deleted": false
+      }
+    ],
     "deleted": false
   },
   {
     "name": "Lindt & Sprüngli",
-    "locationId": 1,
+    "locationId": {
+      "id": 1,
+      "longitude": 19.833549,
+      "latitude": 45.267136,
+      "address": "Sutjeska 3, Novi Sad, 21000",
+      "deleted": false
+    },
     "workingHours": "9am - 5pm",
     "status": "Open",
     "logo": "https://bcassetcdn.com/public/blog/wp-content/uploads/2021/10/18190854/Lindt.png",
     "managerUsername": "manager2",
     "rating": "5",
+    "comments": [],
+    "chocolates": [],
+    "purchases": [],
     "deleted": false
   },
   {
     "name": "Dove Chocolate",
-    "locationId": 1,
+    "locationId": {
+      "id": 1,
+      "longitude": 19.833549,
+      "latitude": 45.267136,
+      "address": "Sutjeska 3, Novi Sad, 21000",
+      "deleted": false
+    },
     "workingHours": "9am - 5pm",
     "status": "Open",
     "logo": "https://bcassetcdn.com/public/blog/wp-content/uploads/2021/10/18191027/Dove.png",
     "managerUsername": "manager2",
     "rating": "5",
+    "comments": [
+      {
+        "username": "Choco funnier",
+        "text": "The best factory there is!",
+        "rating": 5,
+        "deleted": false
+      }
+    ],
+    "chocolates": [],
+    "purchases": [],
     "deleted": false
   },
   {
     "name": "Fran's Chocolates",
-    "locationId": 1,
+    "locationId": {
+      "id": 1,
+      "longitude": 19.833549,
+      "latitude": 45.267136,
+      "address": "Sutjeska 3, Novi Sad, 21000",
+      "deleted": false
+    },
     "workingHours": "9am - 5pm",
     "status": "Open",
     "logo": "https://bcassetcdn.com/public/blog/wp-content/uploads/2021/10/18191438/Frans-Chocolates.png",
     "managerUsername": "manager2",
     "rating": "5",
+    "comments": [],
+    "chocolates": [],
+    "purchases": [],
     "deleted": false
   },
   {
     "name": "Ritter Sport",
-    "locationId": 1,
+    "locationId": {
+      "id": 1,
+      "longitude": 19.833549,
+      "latitude": 45.267136,
+      "address": "Sutjeska 3, Novi Sad, 21000",
+      "deleted": false
+    },
     "workingHours": "9am - 5pm",
     "status": "Open",
     "logo": "https://bcassetcdn.com/public/blog/wp-content/uploads/2021/10/18191514/ritter-sport.png",
     "managerUsername": "manager2",
     "rating": "5",
+    "comments": [],
+    "chocolates": [],
+    "purchases": [],
     "deleted": false
   },
   {
     "name": "Teuscher",
-    "locationId": 1,
+    "locationId": {
+      "id": 1,
+      "longitude": 19.833549,
+      "latitude": 45.267136,
+      "address": "Sutjeska 3, Novi Sad, 21000",
+      "deleted": false
+    },
     "workingHours": "9am - 5pm",
     "status": "Open",
     "logo": "https://bcassetcdn.com/public/blog/wp-content/uploads/2021/10/18191535/Teuscher.png",
     "managerUsername": "manager2",
     "rating": "5",
-    "deleted": false
-  },
-  {
-    "name": "Choco Factory",
-    "locationId": 1,
-    "workingHours": "9am - 5pm",
-    "status": "Open",
-    "logo": "logo_url",
-    "managerUsername": "manager1",
-    "rating": 0,
-    "deleted": false
-  },
-  {
-    "name": "Simka",
-    "locationId": 1,
-    "workingHours": "9am - 5pm",
-    "status": "Open",
-    "logo": "logo_url",
-    "managerUsername": "manager1",
-    "rating": 0,
+    "comments": [],
+    "chocolates": [],
+    "purchases": [],
     "deleted": false
   }
 ]

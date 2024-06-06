@@ -14,16 +14,16 @@ app.get("/", (req, res) => {
 });
 
 // Load data
-const users = JSON.parse(fs.readFileSync("./data/users.json", "utf-8"));
-const customerTypes = JSON.parse(fs.readFileSync("./data/customerTypes.json", "utf-8"));
-const locations = JSON.parse(fs.readFileSync("./data/locations.json", "utf-8"));
-const factories = JSON.parse(fs.readFileSync("./data/factories.json", "utf-8"));
-const chocolates = JSON.parse(fs.readFileSync("./data/chocolates.json", "utf-8"));
-const carts = JSON.parse(fs.readFileSync("./data/carts.json", "utf-8"));
-const purchases = JSON.parse(fs.readFileSync("./data/purchases.json", "utf-8"));
-const comments = JSON.parse(fs.readFileSync("./data/comments.json", "utf-8"));
+const data = JSON.parse(fs.readFileSync("./data/factories.json", "utf-8"));
+
+// Helper functions
+const saveData = (data) => {
+  fs.writeFileSync("./data/factories.json", JSON.stringify(data, null, 2));
+};
 
 // User routes
+const users = JSON.parse(fs.readFileSync("./data/users.json", "utf-8"));
+
 app.post("/register", (req, res) => {
   const { username, password, firstName, lastName, gender, birthDate } = req.body;
   if (users.find(user => user.username === username)) {
@@ -70,130 +70,78 @@ app.delete("/users/:username", (req, res) => {
   res.send('User deleted');
 });
 
-// Customer Type routes
-app.post("/customerTypes", (req, res) => {
-  const { type, discount, targetPoints } = req.body;
-  const newCustomerType = { type, discount, targetPoints, deleted: false };
-  customerTypes.push(newCustomerType);
-  fs.writeFileSync('./data/customerTypes.json', JSON.stringify(customerTypes, null, 2));
-  res.status(201).send(newCustomerType);
-});
-
-app.get("/customerTypes", (req, res) => {
-  const activeCustomerTypes = customerTypes.filter((ct) => !ct.deleted);
-  res.send(activeCustomerTypes);
-});
-
-app.put("/customerTypes/:type", (req, res) => {
-  const customerType = customerTypes.find(ct => ct.type === req.params.type && !ct.deleted);
-  if (!customerType) {
-    return res.status(404).send('Customer Type not found');
-  }
-  const { discount, targetPoints } = req.body;
-  if (discount) customerType.discount = discount;
-  if (targetPoints) customerType.targetPoints = targetPoints;
-
-  fs.writeFileSync('./data/customerTypes.json', JSON.stringify(customerTypes, null, 2));
-  res.send('Customer Type updated');
-});
-
-app.delete("/customerTypes/:type", (req, res) => {
-  const customerType = customerTypes.find(ct => ct.type === req.params.type);
-  if (!customerType) {
-    return res.status(404).send('Customer Type not found');
-  }
-  customerType.deleted = true;
-  fs.writeFileSync('./data/customerTypes.json', JSON.stringify(customerTypes, null, 2));
-  res.send('Customer Type deleted');
-});
-
-// Location routes
-app.post("/locations", (req, res) => {
-  const { id, longitude, latitude, address } = req.body;
-  const newLocation = { id, longitude, latitude, address, deleted: false };
-  locations.push(newLocation);
-  fs.writeFileSync('./data/locations.json', JSON.stringify(locations, null, 2));
-  res.status(201).send(newLocation);
-});
-
-app.get("/locations", (req, res) => {
-  const activeLocations = locations.filter((loc) => !loc.deleted);
-  res.send(activeLocations);
-});
-
-app.put("/locations/:id", (req, res) => {
-  const location = locations.find(loc => loc.id === parseInt(req.params.id) && !loc.deleted);
-  if (!location) {
-    return res.status(404).send('Location not found');
-  }
-  const { longitude, latitude, address } = req.body;
-  if (longitude) location.longitude = longitude;
-  if (latitude) location.latitude = latitude;
-  if (address) location.address = address;
-
-  fs.writeFileSync('./data/locations.json', JSON.stringify(locations, null, 2));
-  res.send('Location updated');
-});
-
-app.delete("/locations/:id", (req, res) => {
-  const location = locations.find(loc => loc.id === parseInt(req.params.id));
-  if (!location) {
-    return res.status(404).send('Location not found');
-  }
-  location.deleted = true;
-  fs.writeFileSync('./data/locations.json', JSON.stringify(locations, null, 2));
-  res.send('Location deleted');
-});
-
 // Factories routes
 app.post("/factories", (req, res) => {
-  const { name, locationId, workingHours, status, logo, managerUsername } = req.body;
+  const { name, location, workingHours, status, logo, managerUsername } = req.body;
   const newFactory = {
     name,
-    locationId,
+    location,
     workingHours,
     status,
     logo,
     managerUsername,
     rating: 0,
+    comments: [],
+    chocolates: [],
+    purchases: [],
     deleted: false,
   };
-  factories.push(newFactory);
-  fs.writeFileSync("./data/factories.json", JSON.stringify(factories, null, 2));
+  data.push(newFactory);
+  saveData(data);
   res.status(201).send(newFactory);
 });
 
 app.get("/factories", (req, res) => {
-  const activeFactories = factories.filter((f) => !f.deleted);
+  const activeFactories = data.filter((f) => !f.deleted);
   res.send(activeFactories);
 });
 
 app.get("/factories/:name", (req, res) => {
-  const factory = factories.find((f) => f.name === req.params.name && !f.deleted);
+  const factory = data.find((f) => f.name === req.params.name && !f.deleted);
   if (!factory) {
     return res.status(404).send("Factory not found");
   }
   res.send(factory);
 });
 
+app.put("/factories/:name", (req, res) => {
+  const factory = data.find((f) => f.name === req.params.name && !f.deleted);
+  if (!factory) {
+    return res.status(404).send("Factory not found");
+  }
+  const { location, workingHours, status, logo, managerUsername, rating } = req.body;
+  if (location) factory.location = location;
+  if (workingHours) factory.workingHours = workingHours;
+  if (status) factory.status = status;
+  if (logo) factory.logo = logo;
+  if (managerUsername) factory.managerUsername = managerUsername;
+  if (rating) factory.rating = rating;
+
+  saveData(data);
+  res.send("Factory updated");
+});
+
 app.delete("/factories/:name", (req, res) => {
-  const factory = factories.find((f) => f.name === req.params.name);
+  const factory = data.find((f) => f.name === req.params.name);
   if (!factory) {
     return res.status(404).send("Factory not found");
   }
   factory.deleted = true;
-  fs.writeFileSync("./data/factories.json", JSON.stringify(factories, null, 2));
+  saveData(data);
   res.send("Factory deleted");
 });
 
 // Chocolates routes
-app.post("/chocolates", (req, res) => {
-  const { name, price, type, factoryName, kind, weight, description, image, status, quantity } = req.body;
+app.post("/factories/:name/chocolates", (req, res) => {
+  const factory = data.find((f) => f.name === req.params.name && !f.deleted);
+  if (!factory) {
+    return res.status(404).send("Factory not found");
+  }
+  const { name, price, type, kind, weight, description, image, status, quantity } = req.body;
   const newChocolate = {
     name,
     price,
     type,
-    factoryName,
     kind,
     weight,
     description,
@@ -202,35 +150,38 @@ app.post("/chocolates", (req, res) => {
     quantity,
     deleted: false,
   };
-  chocolates.push(newChocolate);
-  fs.writeFileSync("./data/chocolates.json", JSON.stringify(chocolates, null, 2));
+  factory.chocolates.push(newChocolate);
+  saveData(data);
   res.status(201).send(newChocolate);
 });
 
-app.get("/chocolates", (req, res) => {
-  const activeChocolates = chocolates.filter((c) => !c.deleted);
+app.get("/factories/:name/chocolates", (req, res) => {
+  const factory = data.find((f) => f.name === req.params.name && !f.deleted);
+  if (!factory) {
+    return res.status(404).send("Factory not found");
+  }
+  const activeChocolates = factory.chocolates.filter((c) => !c.deleted);
   res.send(activeChocolates);
 });
 
-app.get("/chocolates/:name", (req, res) => {
-  const chocolate = chocolates.find((c) => c.name === req.params.name && !c.deleted);
+app.get("/factories/:name/chocolates/:chocolateName", (req, res) => {
+  const factory = data.find((f) => f.name === req.params.name && !f.deleted);
+  if (!factory) {
+    return res.status(404).send("Factory not found");
+  }
+  const chocolate = factory.chocolates.find((c) => c.name === req.params.chocolateName && !c.deleted);
   if (!chocolate) {
     return res.status(404).send("Chocolate not found");
   }
   res.send(chocolate);
 });
 
-app.get("/factories/:name/chocolates", (req, res) => {
-  const factory = factories.find((f) => f.name === req.params.name && !f.deleted);
+app.put("/factories/:name/chocolates/:chocolateName", (req, res) => {
+  const factory = data.find((f) => f.name === req.params.name && !f.deleted);
   if (!factory) {
     return res.status(404).send("Factory not found");
   }
-  const factoryChocolates = chocolates.filter((c) => c.factoryName === req.params.name && !c.deleted);
-  res.send(factoryChocolates);
-});
-
-app.put("/chocolates/:name", (req, res) => {
-  const chocolate = chocolates.find((c) => c.name === req.params.name && !c.deleted);
+  const chocolate = factory.chocolates.find((c) => c.name === req.params.chocolateName && !c.deleted);
   if (!chocolate) {
     return res.status(404).send("Chocolate not found");
   }
@@ -244,140 +195,167 @@ app.put("/chocolates/:name", (req, res) => {
   if (status) chocolate.status = status;
   if (quantity) chocolate.quantity = quantity;
 
-  fs.writeFileSync("./data/chocolates.json", JSON.stringify(chocolates, null, 2));
+  saveData(data);
   res.send("Chocolate updated");
 });
 
-app.delete("/chocolates/:name", (req, res) => {
-  const chocolate = chocolates.find((c) => c.name === req.params.name);
+app.delete("/factories/:name/chocolates/:chocolateName", (req, res) => {
+  const factory = data.find((f) => f.name === req.params.name);
+  if (!factory) {
+    return res.status(404).send("Factory not found");
+  }
+  const chocolate = factory.chocolates.find((c) => c.name === req.params.chocolateName);
   if (!chocolate) {
     return res.status(404).send("Chocolate not found");
   }
   chocolate.deleted = true;
-  fs.writeFileSync("./data/chocolates.json", JSON.stringify(chocolates, null, 2));
+  saveData(data);
   res.send("Chocolate deleted");
 });
 
-// Cart routes
-app.post("/carts", (req, res) => {
-  const { username, chocolates } = req.body;
-  const newCart = {
-    username,
-    chocolates,
-    totalPrice: chocolates.reduce((sum, c) => sum + c.price * c.quantity, 0),
-    deleted: false,
-  };
-  carts.push(newCart);
-  fs.writeFileSync("./data/carts.json", JSON.stringify(carts, null, 2));
-  res.status(201).send(newCart);
-});
-
-app.get("/carts/:username", (req, res) => {
-  const cart = carts.find((c) => c.username === req.params.username && !c.deleted);
-  if (!cart) {
-    return res.status(404).send("Cart not found");
-  }
-  res.send(cart);
-});
-
-app.get("/carts/factory/:factoryName", (req, res) => {
-  const factoryCarts = carts.filter((c) => c.chocolates.some(choc => choc.factoryName === req.params.factoryName) && !c.deleted);
-  res.send(factoryCarts);
-});
-
-app.delete("/carts/:username", (req, res) => {
-  const cart = carts.find((c) => c.username === req.params.username);
-  if (!cart) {
-    return res.status(404).send("Cart not found");
-  }
-  cart.deleted = true;
-  fs.writeFileSync("./data/carts.json", JSON.stringify(carts, null, 2));
-  res.send("Cart deleted");
-});
-
 // Purchases routes
-app.post("/purchases", (req, res) => {
-  const { id, chocolates, factoryName, date, totalPrice, username, status } = req.body;
+app.post("/factories/:name/purchases", (req, res) => {
+  const factory = data.find((f) => f.name === req.params.name && !f.deleted);
+  if (!factory) {
+    return res.status(404).send("Factory not found");
+  }
+  const { id, chocolates, date, totalPrice, username, status } = req.body;
   const newPurchase = {
     id,
     chocolates,
-    factoryName,
     date,
     totalPrice,
     username,
     status,
     deleted: false,
   };
-  purchases.push(newPurchase);
-  fs.writeFileSync("./data/purchases.json", JSON.stringify(purchases, null, 2));
+  factory.purchases.push(newPurchase);
+  saveData(data);
   res.status(201).send(newPurchase);
 });
 
-app.get("/purchases", (req, res) => {
-  const activePurchases = purchases.filter((p) => !p.deleted);
+app.get("/factories/:name/purchases", (req, res) => {
+  const factory = data.find((f) => f.name === req.params.name && !f.deleted);
+  if (!factory) {
+    return res.status(404).send("Factory not found");
+  }
+  const activePurchases = factory.purchases.filter((p) => !p.deleted);
   res.send(activePurchases);
 });
 
-app.get("/purchases/:id", (req, res) => {
-  const purchase = purchases.find((p) => p.id === req.params.id && !p.deleted);
+app.get("/factories/:name/purchases/:id", (req, res) => {
+  const factory = data.find((f) => f.name === req.params.name && !f.deleted);
+  if (!factory) {
+    return res.status(404).send("Factory not found");
+  }
+  const purchase = factory.purchases.find((p) => p.id === parseInt(req.params.id) && !p.deleted);
   if (!purchase) {
     return res.status(404).send("Purchase not found");
   }
   res.send(purchase);
 });
 
-app.get("/purchases/factory/:factoryName", (req, res) => {
-  const factoryPurchases = purchases.filter((p) => p.factoryName === req.params.factoryName && !p.deleted);
-  res.send(factoryPurchases);
+app.put("/factories/:name/purchases/:id", (req, res) => {
+  const factory = data.find((f) => f.name === req.params.name && !f.deleted);
+  if (!factory) {
+    return res.status(404).send("Factory not found");
+  }
+  const purchase = factory.purchases.find((p) => p.id === parseInt(req.params.id) && !p.deleted);
+  if (!purchase) {
+    return res.status(404).send("Purchase not found");
+  }
+  const { chocolates, date, totalPrice, username, status } = req.body;
+  if (chocolates) purchase.chocolates = chocolates;
+  if (date) purchase.date = date;
+  if (totalPrice) purchase.totalPrice = totalPrice;
+  if (username) purchase.username = username;
+  if (status) purchase.status = status;
+
+  saveData(data);
+  res.send("Purchase updated");
 });
 
-app.delete("/purchases/:id", (req, res) => {
-  const purchase = purchases.find((p) => p.id === req.params.id);
+app.delete("/factories/:name/purchases/:id", (req, res) => {
+  const factory = data.find((f) => f.name === req.params.name);
+  if (!factory) {
+    return res.status(404).send("Factory not found");
+  }
+  const purchase = factory.purchases.find((p) => p.id === parseInt(req.params.id));
   if (!purchase) {
     return res.status(404).send("Purchase not found");
   }
   purchase.deleted = true;
-  fs.writeFileSync("./data/purchases.json", JSON.stringify(purchases, null, 2));
+  saveData(data);
   res.send("Purchase deleted");
 });
 
 // Comments routes
-app.post("/comments", (req, res) => {
-  const { username, factoryName, text, rating } = req.body;
+app.post("/factories/:name/comments", (req, res) => {
+  const factory = data.find((f) => f.name === req.params.name && !f.deleted);
+  if (!factory) {
+    return res.status(404).send("Factory not found");
+  }
+  const { username, text, rating } = req.body;
   const newComment = {
     username,
-    factoryName,
     text,
     rating,
     deleted: false,
   };
-  comments.push(newComment);
-  fs.writeFileSync("./data/comments.json", JSON.stringify(comments, null, 2));
+  factory.comments.push(newComment);
+  saveData(data);
   res.status(201).send(newComment);
 });
 
-app.get("/comments", (req, res) => {
-  const activeComments = comments.filter((c) => !c.deleted);
+app.get("/factories/:name/comments", (req, res) => {
+  const factory = data.find((f) => f.name === req.params.name && !f.deleted);
+  if (!factory) {
+    return res.status(404).send("Factory not found");
+  }
+  const activeComments = factory.comments.filter((c) => !c.deleted);
   res.send(activeComments);
 });
 
-app.get("/comments/user/:username", (req, res) => {
-  const userComments = comments.filter((c) => c.username === req.params.username && !c.deleted);
-  res.send(userComments);
+app.get("/factories/:name/comments/:id", (req, res) => {
+  const factory = data.find((f) => f.name === req.params.name && !f.deleted);
+  if (!factory) {
+    return res.status(404).send("Factory not found");
+  }
+  const comment = factory.comments.find((c) => c.id === parseInt(req.params.id) && !c.deleted);
+  if (!comment) {
+    return res.status(404).send("Comment not found");
+  }
+  res.send(comment);
 });
 
-app.get("/comments/factory/:factoryName", (req, res) => {
-  const factoryComments = comments.filter((c) => c.factoryName === req.params.factoryName && !c.deleted);
-  res.send(factoryComments);
+app.put("/factories/:name/comments/:id", (req, res) => {
+  const factory = data.find((f) => f.name === req.params.name && !f.deleted);
+  if (!factory) {
+    return res.status(404).send("Factory not found");
+  }
+  const comment = factory.comments.find((c) => c.id === parseInt(req.params.id) && !c.deleted);
+  if (!comment) {
+    return res.status(404).send("Comment not found");
+  }
+  const { text, rating } = req.body;
+  if (text) comment.text = text;
+  if (rating) comment.rating = rating;
+
+  saveData(data);
+  res.send("Comment updated");
 });
 
-app.delete("/comments/:id", (req, res) => {
-  const comment = comments.find((c) => c.id === req.params.id); // Pretpostavlja se da svaki komentar ima jedinstveni ID
+app.delete("/factories/:name/comments/:id", (req, res) => {
+  const factory = data.find((f) => f.name === req.params.name);
+  if (!factory) {
+    return res.status(404).send("Factory not found");
+  }
+  const comment = factory.comments.find((c) => c.id === parseInt(req.params.id));
   if (!comment) {
     return res.status(404).send("Comment not found");
   }
   comment.deleted = true;
-  fs.writeFileSync("./data/comments.json", JSON.stringify(comments, null, 2));
+  saveData(data);
   res.send("Comment deleted");
 });
 

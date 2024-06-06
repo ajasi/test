@@ -193,7 +193,7 @@ app.put("/factories/:name/chocolates/:chocolateName", (req, res) => {
   if (description) chocolate.description = description;
   if (image) chocolate.image = image;
   if (status) chocolate.status = status;
-  if (quantity) chocolate.quantity = quantity;
+  if (quantity !== null) chocolate.quantity = quantity;
 
   saveData(data);
   res.send("Chocolate updated");

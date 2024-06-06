@@ -111,6 +111,18 @@
         "status": "asdf",
         "quantity": 1,
         "deleted": true
+      },
+      {
+        "name": "cvcv",
+        "price": 23,
+        "type": "234",
+        "kind": "234",
+        "weight": 234,
+        "description": "qw",
+        "image": "ewg",
+        "status": "Unavailable",
+        "quantity": 1,
+        "deleted": false
       }
     ],
     "purchases": [

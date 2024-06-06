@@ -9,21 +9,32 @@ const state = ref({
 });
 
 onMounted(() => {
-  fetchData();
+  getAllFactories();
 });
 
-const fetchData = async () => {
+const getAllFactories = async () => {
   try {
-    state.value.factoryData = await API.getFactories();
+    const response = await API.getFactories();
+    state.value.factoryData = sortFactories(response.data);
   } catch (error) {
     handleError(error);
+  } finally {
+    state.value.isLoading = false; 
   }
-  state.value.isLoading = false;
+};
+
+const sortFactories = (factories) => {
+  return factories.sort((a, b) => {
+    if (a.status !== 'Open' && b.status === 'Open') return 1;
+    if (a.status === 'Open' && b.status !== 'Open') return -1;
+    return 0;
+  });
 };
 
 const handleError = (error) => {
   console.log("Error occurred:", error);
 };
+
 </script>
 <template>
   <div>
@@ -34,6 +45,7 @@ const handleError = (error) => {
         class="col-12 col-md-6 col-lg-4"
         v-for="factory in state.factoryData"
         :key="factory.name"
+        :class="{ 'opacity-50': factory.status !== 'Open' }"
       >
         <router-link :to="{ name: 'factory', params: { name: factory.name } }">
           <FactoryCard :factory="factory" />

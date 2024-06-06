@@ -15,6 +15,7 @@ const router = createRouter({
       path: '/factory/:name',
       name: 'factory',
       component: FactoryDetails
+      
     },
   ]
 })

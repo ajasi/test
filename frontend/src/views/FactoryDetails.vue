@@ -1,4 +1,9 @@
-<script></script>
+<script setup>
+import FactoryDetails from '../components/FactoryDetails.vue'
+</script>
+
 <template>
-  <div>Factory details</div>
+  <main>
+    <FactoryDetails />
+  </main>
 </template>

@@ -16,7 +16,7 @@ const props = defineProps({
         <img :src="factory.logo" alt="Factory Logo" class="img-fluid" />
       </div>
       <h3>{{ factory.name }}</h3>
-      <p>{{ factory.location }}</p>
+      <p>{{ factory.locationId.address }}</p>
       <div class="rating d-flex align-items-center">
         <strong>{{ factory.rating }}/5</strong>
         <img src="../assets/Images/star.svg" alt="star icon" class="ms-1" />

@@ -15,8 +15,14 @@
     "rating": "4",
     "comments": [
       {
-        "username": "Choco fun",
+        "username": "Mark Doe",
         "text": "The best factory there is!",
+        "rating": 5,
+        "deleted": false
+      },
+      {
+        "username": "John Doe",
+        "text": "The best!",
         "rating": 5,
         "deleted": false
       }
@@ -32,16 +38,16 @@
         "image": "image_url",
         "status": "Available",
         "quantity": 100,
-        "deleted": false
+        "deleted": true
       },
       {
         "name": "Dark Chocolate",
-        "price": 7,
+        "price": 12,
         "type": "Premium",
-        "kind": "Dark",
+        "kind": "Dark 2",
         "weight": 150,
         "description": "Rich dark chocolate",
-        "image": "image_url_dark",
+        "image": "https://online.idea.rs/images/products/409/409000074_1m.jpg?1625217490",
         "status": "Available",
         "quantity": 200,
         "deleted": false
@@ -53,22 +59,58 @@
         "kind": "White",
         "weight": 120,
         "description": "Creamy white chocolate",
-        "image": "image_url_white",
+        "image": "https://online.idea.rs/images/products/442/442104854_1m.jpg?1500019042",
         "status": "Available",
         "quantity": 150,
         "deleted": false
       },
       {
         "name": "Milk Chocolate with Hazelnuts",
-        "price": 8,
+        "price": 10,
         "type": "Deluxe",
         "kind": "Milk",
         "weight": 200,
         "description": "Milk chocolate with crunchy hazelnuts",
-        "image": "image_url_milk_hazelnuts",
+        "image": "https://online.idea.rs/images/products/442/442104748_1m.jpg?1705310138",
         "status": "Available",
-        "quantity": 100,
+        "quantity": 0,
         "deleted": false
+      },
+      {
+        "name": "44432",
+        "price": 234,
+        "type": "234",
+        "kind": "234",
+        "weight": 23422,
+        "description": "234",
+        "image": "234",
+        "status": "21",
+        "quantity": 1,
+        "deleted": true
+      },
+      {
+        "name": "123412fdsg",
+        "price": 3412,
+        "type": "3412",
+        "kind": "341",
+        "weight": 234,
+        "description": "dsfgdsg",
+        "image": "sdfg",
+        "status": "sfdg",
+        "quantity": 0,
+        "deleted": true
+      },
+      {
+        "name": "sadfasdf",
+        "price": 2341,
+        "type": "3241",
+        "kind": "adf",
+        "weight": 324,
+        "description": "asdf",
+        "image": "sadf",
+        "status": "asdf",
+        "quantity": 1,
+        "deleted": true
       }
     ],
     "purchases": [
@@ -107,7 +149,7 @@
       "deleted": false
     },
     "workingHours": "9am - 5pm",
-    "status": "Open",
+    "status": "Closed",
     "logo": "https://bcassetcdn.com/public/blog/wp-content/uploads/2021/10/18190854/Lindt.png",
     "managerUsername": "manager2",
     "rating": "5",
@@ -126,7 +168,7 @@
       "deleted": false
     },
     "workingHours": "9am - 5pm",
-    "status": "Open",
+    "status": "Closed",
     "logo": "https://bcassetcdn.com/public/blog/wp-content/uploads/2021/10/18191027/Dove.png",
     "managerUsername": "manager2",
     "rating": "5",

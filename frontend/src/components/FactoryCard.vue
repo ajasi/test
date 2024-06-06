@@ -4,7 +4,7 @@ import { defineProps } from "vue";
 const props = defineProps({
   factory: {
     type: Object,
-    required: true,
+    required: false,
   },
 });
 </script>

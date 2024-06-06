@@ -96,8 +96,10 @@ const createChocolates = async () => {
             <form @submit.prevent="isEdit ? editChocolates() : createChocolates()">
               <div class="row">
                 <div class="col-12 mb-3">
-                  <label for="name" class="form-label">Name</label>
+                  <label for="productName" class="form-label">Name</label>
                   <input
+                    id="productName"
+                    name="name"
                     type="text"
                     class="form-control"
                     v-model="state.product.name"
@@ -108,12 +110,21 @@ const createChocolates = async () => {
               </div>
               <div class="row">
                 <div class="col-md-6 mb-3">
-                  <label for="type" class="form-label">Type</label>
-                  <input type="text" class="form-control" v-model="state.product.type" required />
+                  <label for="productType" class="form-label">Type</label>
+                  <input
+                    id="productType"
+                    name="type"
+                    type="text"
+                    class="form-control"
+                    v-model="state.product.type"
+                    required
+                  />
                 </div>
                 <div class="col-md-6 mb-3">
-                  <label for="price" class="form-label">Price</label>
+                  <label for="productPrice" class="form-label">Price</label>
                   <input
+                    id="productPrice"
+                    name="price"
                     type="number"
                     class="form-control"
                     v-model="state.product.price"
@@ -123,12 +134,21 @@ const createChocolates = async () => {
               </div>
               <div class="row">
                 <div class="col-md-6 mb-3">
-                  <label for="kind" class="form-label">Kind</label>
-                  <input type="text" class="form-control" v-model="state.product.kind" required />
+                  <label for="productKind" class="form-label">Kind</label>
+                  <input
+                    id="productKind"
+                    name="kind"
+                    type="text"
+                    class="form-control"
+                    v-model="state.product.kind"
+                    required
+                  />
                 </div>
                 <div class="col-md-6 mb-3">
-                  <label for="weight" class="form-label">Weight</label>
+                  <label for="productWeight" class="form-label">Weight</label>
                   <input
+                    id="productWeight"
+                    name="weight"
                     type="number"
                     class="form-control"
                     v-model="state.product.weight"
@@ -138,21 +158,36 @@ const createChocolates = async () => {
               </div>
               <div class="row">
                 <div class="col-12 mb-3">
-                  <label for="image" class="form-label">Image URL</label>
-                  <input type="text" class="form-control" v-model="state.product.image" required />
+                  <label for="productImage" class="form-label">Image URL</label>
+                  <input
+                    id="productImage"
+                    name="image"
+                    type="text"
+                    class="form-control"
+                    v-model="state.product.image"
+                    required
+                  />
                 </div>
               </div>
               <div class="row">
                 <div class="col-md-6 mb-3">
-                  <label for="status" class="form-label">Status</label>
-                  <select class="form-select" v-model="state.product.status" required>
+                  <label for="productStatus" class="form-label">Status</label>
+                  <select
+                    id="productStatus"
+                    name="status"
+                    class="form-select"
+                    v-model="state.product.status"
+                    required
+                  >
                     <option value="Available">Available</option>
                     <option value="Unavailable">Unavailable</option>
                   </select>
                 </div>
                 <div class="col-md-6 mb-3">
-                  <label for="quantity" class="form-label">Quantity</label>
+                  <label for="productQuantity" class="form-label">Quantity</label>
                   <input
+                    id="productQuantity"
+                    name="quantity"
                     type="number"
                     class="form-control"
                     v-model="state.product.quantity"
@@ -163,8 +198,10 @@ const createChocolates = async () => {
               </div>
               <div class="row">
                 <div class="col-12 mb-3">
-                  <label for="description" class="form-label">Description</label>
+                  <label for="productDescription" class="form-label">Description</label>
                   <textarea
+                    id="productDescription"
+                    name="description"
                     class="form-control"
                     v-model="state.product.description"
                     required

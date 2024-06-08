@@ -78,6 +78,9 @@ app.delete("/users/:username", (req, res) => {
 // Factories routes
 app.post("/factories", (req, res) => {
   const { name, location, workingHours, status, logo, managerUsername } = req.body;
+  if (rating < 1 || rating > 5) {
+    return res.status(400).send('Rating must be between 1 and 5');
+  }
   const newFactory = {
     id: getNextId(data),
     name,
@@ -124,6 +127,9 @@ app.put("/factories/:id", (req, res) => {
     return res.status(404).send("Factory not found");
   }
   const { name, location, workingHours, status, logo, managerUsername, rating } = req.body;
+  if (rating < 1 || rating > 5) {
+    return res.status(400).send('Rating must be between 1 and 5');
+  }
   if (name) factory.name = name;
   if (location) factory.location = location;
   if (workingHours) factory.workingHours = workingHours;
@@ -152,7 +158,7 @@ app.post("/factories/:id/chocolates", (req, res) => {
   if (!factory) {
     return res.status(404).send("Factory not found");
   }
-  const { name, price, type, kind, weight, description, image, status, quantity } = req.body;
+  const { name, price, type, kind, weight, description, image } = req.body;
   const newChocolate = {
     id: getNextId(factory.chocolates),
     name,
@@ -162,8 +168,8 @@ app.post("/factories/:id/chocolates", (req, res) => {
     weight,
     description,
     image,
-    status,
-    quantity,
+    status: "Out of stock",
+    quantity: 0,
     deleted: false,
   };
   factory.chocolates.push(newChocolate);
@@ -213,7 +219,7 @@ app.put("/factories/:id/chocolates/:chocolateId", (req, res) => {
   if (!chocolate) {
     return res.status(404).send("Chocolate not found");
   }
-  const { name, price, type, kind, weight, description, image, status, quantity } = req.body;
+  const { name, price, type, kind, weight, description, image, quantity } = req.body;
   if (name) chocolate.name = name;
   if (price) chocolate.price = price;
   if (type) chocolate.type = type;
@@ -221,8 +227,8 @@ app.put("/factories/:id/chocolates/:chocolateId", (req, res) => {
   if (weight) chocolate.weight = weight;
   if (description) chocolate.description = description;
   if (image) chocolate.image = image;
-  if (status) chocolate.status = status;
   if (quantity !== null) chocolate.quantity = quantity;
+  chocolate.status = quantity > 0 ? "In stock" : "Out of stock";
 
   saveData(data);
   res.send("Chocolate updated");
@@ -325,11 +331,15 @@ app.post("/factories/:id/comments", (req, res) => {
     return res.status(404).send("Factory not found");
   }
   const { username, text, rating } = req.body;
+  if (rating < 1 || rating > 5) {
+    return res.status(400).send('Rating must be between 1 and 5');
+  }
   const newComment = {
     id: getNextId(factory.comments),
     username,
     text,
     rating,
+    approved: false,
     deleted: false,
   };
   factory.comments.push(newComment);
@@ -367,9 +377,13 @@ app.put("/factories/:id/comments/:commentId", (req, res) => {
   if (!comment) {
     return res.status(404).send("Comment not found");
   }
-  const { text, rating } = req.body;
+  const { text, rating, approved } = req.body;
+  if (rating < 1 || rating > 5) {
+    return res.status(400).send('Rating must be between 1 and 5');
+  }
   if (text) comment.text = text;
   if (rating) comment.rating = rating;
+  if (approved !== undefined) comment.approved = approved;
 
   saveData(data);
   res.send("Comment updated");

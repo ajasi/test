@@ -2,12 +2,10 @@
   {
     "id": 1,
     "name": "Ferrero Rocher",
-    "locationId": {
-      "id": 1,
+    "location": {
       "longitude": 19.833549,
       "latitude": 45.267136,
-      "address": "Sutjeska 3, Novi Sad, 21000",
-      "deleted": false
+      "address": "Sutjeska 3, Novi Sad, 21000"
     },
     "workingHours": "9am - 5pm",
     "status": "Open",
@@ -140,12 +138,10 @@
   {
     "id": 2,
     "name": "Lindt & Sprüngli",
-    "locationId": {
-      "id": 1,
+    "location": {
       "longitude": 19.833549,
       "latitude": 45.267136,
-      "address": "Sutjeska 3, Novi Sad, 21000",
-      "deleted": false
+      "address": "Sutjeska 3, Novi Sad, 21000"
     },
     "workingHours": "9am - 5pm",
     "status": "Closed",
@@ -174,12 +170,10 @@
   {
     "id": 3,
     "name": "Dove Chocolate",
-    "locationId": {
-      "id": 1,
+    "location": {
       "longitude": 19.833549,
       "latitude": 45.267136,
-      "address": "Sutjeska 3, Novi Sad, 21000",
-      "deleted": false
+      "address": "Sutjeska 3, Novi Sad, 21000"
     },
     "workingHours": "9am - 5pm",
     "status": "Closed",
@@ -201,12 +195,10 @@
   {
     "id": 4,
     "name": "Fran's Chocolates",
-    "locationId": {
-      "id": 1,
+    "location": {
       "longitude": 19.833549,
       "latitude": 45.267136,
-      "address": "Sutjeska 3, Novi Sad, 21000",
-      "deleted": false
+      "address": "Sutjeska 3, Novi Sad, 21000"
     },
     "workingHours": "9am - 5pm",
     "status": "Open",
@@ -221,12 +213,10 @@
   {
     "id": 5,
     "name": "Ritter Sport",
-    "locationId": {
-      "id": 1,
+    "location": {
       "longitude": 19.833549,
       "latitude": 45.267136,
-      "address": "Sutjeska 3, Novi Sad, 21000",
-      "deleted": false
+      "address": "Sutjeska 3, Novi Sad, 21000"
     },
     "workingHours": "9am - 5pm",
     "status": "Open",
@@ -241,12 +231,10 @@
   {
     "id": 6,
     "name": "Teuscher",
-    "locationId": {
-      "id": 1,
+    "location": {
       "longitude": 19.833549,
       "latitude": 45.267136,
-      "address": "Sutjeska 3, Novi Sad, 21000",
-      "deleted": false
+      "address": "Sutjeska 3, Novi Sad, 21000"
     },
     "workingHours": "9am - 5pm",
     "status": "Open",

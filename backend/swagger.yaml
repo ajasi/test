@@ -618,6 +618,8 @@ components:
           type: string
         rating:
           type: number
+          minimum: 1
+          maximum: 5
         comments:
           type: array
           items:
@@ -636,8 +638,6 @@ components:
     Location:
       type: object
       properties:
-        id:
-          type: integer
         longitude:
           type: number
         latitude:
@@ -670,6 +670,7 @@ components:
           type: string
         quantity:
           type: number
+          default: 0
         deleted:
           type: boolean
 
@@ -704,5 +705,10 @@ components:
           type: string
         rating:
           type: number
+          minimum: 1
+          maximum: 5
+        approved:
+          type: boolean
+          default: false
         deleted:
           type: boolean

@@ -1,5 +1,6 @@
 [
   {
+    "id": 1,
     "name": "Ferrero Rocher",
     "locationId": {
       "id": 1,
@@ -15,12 +16,14 @@
     "rating": "4",
     "comments": [
       {
+        "id": 1,
         "username": "Mark Doe",
         "text": "The best factory there is!",
         "rating": 5,
         "deleted": false
       },
       {
+        "id": 2,
         "username": "John Doe",
         "text": "The best!",
         "rating": 5,
@@ -29,6 +32,7 @@
     ],
     "chocolates": [
       {
+        "id": 1,
         "name": "Milk Chocolate",
         "price": 5,
         "type": "Regular",
@@ -41,6 +45,7 @@
         "deleted": true
       },
       {
+        "id": 2,
         "name": "Dark Chocolate",
         "price": 12,
         "type": "Premium",
@@ -53,6 +58,7 @@
         "deleted": false
       },
       {
+        "id": 3,
         "name": "White Chocolate",
         "price": 6,
         "type": "Regular",
@@ -65,6 +71,7 @@
         "deleted": false
       },
       {
+        "id": 4,
         "name": "Milk Chocolate with Hazelnuts",
         "price": 10,
         "type": "Deluxe",
@@ -77,42 +84,7 @@
         "deleted": false
       },
       {
-        "name": "44432",
-        "price": 234,
-        "type": "234",
-        "kind": "234",
-        "weight": 23422,
-        "description": "234",
-        "image": "234",
-        "status": "21",
-        "quantity": 1,
-        "deleted": true
-      },
-      {
-        "name": "123412fdsg",
-        "price": 3412,
-        "type": "3412",
-        "kind": "341",
-        "weight": 234,
-        "description": "dsfgdsg",
-        "image": "sdfg",
-        "status": "sfdg",
-        "quantity": 0,
-        "deleted": true
-      },
-      {
-        "name": "sadfasdf",
-        "price": 2341,
-        "type": "3241",
-        "kind": "adf",
-        "weight": 324,
-        "description": "asdf",
-        "image": "sadf",
-        "status": "asdf",
-        "quantity": 1,
-        "deleted": true
-      },
-      {
+        "id": 5,
         "name": "cvcv",
         "price": 23,
         "type": "234",
@@ -123,6 +95,19 @@
         "status": "Unavailable",
         "quantity": 1,
         "deleted": false
+      },
+      {
+        "id": 6,
+        "name": "Seka",
+        "price": 20,
+        "type": "Regular",
+        "kind": "Milk",
+        "weight": 100,
+        "description": "Traditional",
+        "image": "image_url",
+        "status": "Available",
+        "quantity": 0,
+        "deleted": false
       }
     ],
     "purchases": [
@@ -130,6 +115,7 @@
         "id": 1,
         "chocolates": [
           {
+            "id": 1,
             "name": "Milk Chocolate",
             "price": 5,
             "type": "Regular",
@@ -152,6 +138,7 @@
     "deleted": false
   },
   {
+    "id": 2,
     "name": "Lindt & Sprüngli",
     "locationId": {
       "id": 1,
@@ -166,11 +153,26 @@
     "managerUsername": "manager2",
     "rating": "5",
     "comments": [],
-    "chocolates": [],
+    "chocolates": [
+      {
+        "id": 1,
+        "name": "Galeb",
+        "price": 20,
+        "type": "Regular",
+        "kind": "Milk",
+        "weight": 100,
+        "description": "Traditional",
+        "image": "image_url",
+        "status": "Available",
+        "quantity": 0,
+        "deleted": false
+      }
+    ],
     "purchases": [],
     "deleted": false
   },
   {
+    "id": 3,
     "name": "Dove Chocolate",
     "locationId": {
       "id": 1,
@@ -197,6 +199,7 @@
     "deleted": false
   },
   {
+    "id": 4,
     "name": "Fran's Chocolates",
     "locationId": {
       "id": 1,
@@ -216,6 +219,7 @@
     "deleted": false
   },
   {
+    "id": 5,
     "name": "Ritter Sport",
     "locationId": {
       "id": 1,
@@ -235,6 +239,7 @@
     "deleted": false
   },
   {
+    "id": 6,
     "name": "Teuscher",
     "locationId": {
       "id": 1,

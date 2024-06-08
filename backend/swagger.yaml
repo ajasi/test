@@ -121,7 +121,61 @@ paths:
               schema:
                 $ref: '#/components/schemas/Factory'
 
-  /factories/{name}:
+  /factories/{id}:
+    get:
+      summary: Get a factory by ID
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+          description: The ID of the factory
+      responses:
+        '200':
+          description: A factory object
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Factory'
+        '404':
+          description: Factory not found
+    put:
+      summary: Update a factory by ID
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+          description: The ID of the factory
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Factory'
+      responses:
+        '200':
+          description: Factory updated
+        '404':
+          description: Factory not found
+    delete:
+      summary: Logically delete a factory by ID
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+          description: The ID of the factory
+      responses:
+        '200':
+          description: Factory deleted
+        '404':
+          description: Factory not found
+
+  /factories/name/{name}:
     get:
       summary: Get a factory by name
       parameters:
@@ -140,51 +194,17 @@ paths:
                 $ref: '#/components/schemas/Factory'
         '404':
           description: Factory not found
-    put:
-      summary: Update a factory by name
-      parameters:
-        - in: path
-          name: name
-          required: true
-          schema:
-            type: string
-          description: The name of the factory
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/Factory'
-      responses:
-        '200':
-          description: Factory updated
-        '404':
-          description: Factory not found
-    delete:
-      summary: Logically delete a factory
-      parameters:
-        - in: path
-          name: name
-          required: true
-          schema:
-            type: string
-          description: The name of the factory
-      responses:
-        '200':
-          description: Factory deleted
-        '404':
-          description: Factory not found
 
-  /factories/{name}/chocolates:
+  /factories/{id}/chocolates:
     get:
       summary: Get all chocolates in a factory
       parameters:
         - in: path
-          name: name
+          name: id
           required: true
           schema:
-            type: string
-          description: The name of the factory
+            type: integer
+          description: The ID of the factory
       responses:
         '200':
           description: A list of chocolates
@@ -197,14 +217,14 @@ paths:
         '404':
           description: Factory not found
     post:
-      summary: Create a new chocolate
+      summary: Create a new chocolate in a factory
       parameters:
         - in: path
-          name: name
+          name: id
           required: true
           schema:
-            type: string
-          description: The name of the factory
+            type: integer
+          description: The ID of the factory
       requestBody:
         required: true
         content:
@@ -219,16 +239,88 @@ paths:
               schema:
                 $ref: '#/components/schemas/Chocolate'
 
-  /factories/{name}/chocolates/{chocolateName}:
+  /factories/{id}/chocolates/{chocolateId}:
+    get:
+      summary: Get a chocolate by ID
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+          description: The ID of the factory
+        - in: path
+          name: chocolateId
+          required: true
+          schema:
+            type: integer
+          description: The ID of the chocolate
+      responses:
+        '200':
+          description: A chocolate object
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Chocolate'
+        '404':
+          description: Chocolate not found
+    put:
+      summary: Update a chocolate by ID
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+          description: The ID of the factory
+        - in: path
+          name: chocolateId
+          required: true
+          schema:
+            type: integer
+          description: The ID of the chocolate
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Chocolate'
+      responses:
+        '200':
+          description: Chocolate updated
+        '404':
+          description: Chocolate not found
+    delete:
+      summary: Logically delete a chocolate by ID
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+          description: The ID of the factory
+        - in: path
+          name: chocolateId
+          required: true
+          schema:
+            type: integer
+          description: The ID of the chocolate
+      responses:
+        '200':
+          description: Chocolate deleted
+        '404':
+          description: Chocolate not found
+
+  /factories/{id}/chocolates/name/{chocolateName}:
     get:
       summary: Get a chocolate by name
       parameters:
         - in: path
-          name: name
+          name: id
           required: true
           schema:
-            type: string
-          description: The name of the factory
+            type: integer
+          description: The ID of the factory
         - in: path
           name: chocolateName
           required: true
@@ -244,63 +336,17 @@ paths:
                 $ref: '#/components/schemas/Chocolate'
         '404':
           description: Chocolate not found
-    put:
-      summary: Update a chocolate by name
-      parameters:
-        - in: path
-          name: name
-          required: true
-          schema:
-            type: string
-          description: The name of the factory
-        - in: path
-          name: chocolateName
-          required: true
-          schema:
-            type: string
-          description: The name of the chocolate
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/Chocolate'
-      responses:
-        '200':
-          description: Chocolate updated
-        '404':
-          description: Chocolate not found
-    delete:
-      summary: Logically delete a chocolate
-      parameters:
-        - in: path
-          name: name
-          required: true
-          schema:
-            type: string
-          description: The name of the factory
-        - in: path
-          name: chocolateName
-          required: true
-          schema:
-            type: string
-          description: The name of the chocolate
-      responses:
-        '200':
-          description: Chocolate deleted
-        '404':
-          description: Chocolate not found
 
-  /factories/{name}/purchases:
+  /factories/{id}/purchases:
     get:
       summary: Get all purchases in a factory
       parameters:
         - in: path
-          name: name
+          name: id
           required: true
           schema:
-            type: string
-          description: The name of the factory
+            type: integer
+          description: The ID of the factory
       responses:
         '200':
           description: A list of purchases
@@ -313,14 +359,14 @@ paths:
         '404':
           description: Factory not found
     post:
-      summary: Create a new purchase
+      summary: Create a new purchase in a factory
       parameters:
         - in: path
-          name: name
+          name: id
           required: true
           schema:
-            type: string
-          description: The name of the factory
+            type: integer
+          description: The ID of the factory
       requestBody:
         required: true
         content:
@@ -335,18 +381,18 @@ paths:
               schema:
                 $ref: '#/components/schemas/Purchase'
 
-  /factories/{name}/purchases/{id}:
+  /factories/{id}/purchases/{purchaseId}:
     get:
       summary: Get a purchase by ID
       parameters:
         - in: path
-          name: name
+          name: id
           required: true
           schema:
-            type: string
-          description: The name of the factory
+            type: integer
+          description: The ID of the factory
         - in: path
-          name: id
+          name: purchaseId
           required: true
           schema:
             type: integer
@@ -364,13 +410,13 @@ paths:
       summary: Update a purchase by ID
       parameters:
         - in: path
-          name: name
+          name: id
           required: true
           schema:
-            type: string
-          description: The name of the factory
+            type: integer
+          description: The ID of the factory
         - in: path
-          name: id
+          name: purchaseId
           required: true
           schema:
             type: integer
@@ -387,16 +433,16 @@ paths:
         '404':
           description: Purchase not found
     delete:
-      summary: Logically delete a purchase
+      summary: Logically delete a purchase by ID
       parameters:
         - in: path
-          name: name
+          name: id
           required: true
           schema:
-            type: string
-          description: The name of the factory
+            type: integer
+          description: The ID of the factory
         - in: path
-          name: id
+          name: purchaseId
           required: true
           schema:
             type: integer
@@ -407,16 +453,16 @@ paths:
         '404':
           description: Purchase not found
 
-  /factories/{name}/comments:
+  /factories/{id}/comments:
     get:
       summary: Get all comments in a factory
       parameters:
         - in: path
-          name: name
+          name: id
           required: true
           schema:
-            type: string
-          description: The name of the factory
+            type: integer
+          description: The ID of the factory
       responses:
         '200':
           description: A list of comments
@@ -429,14 +475,14 @@ paths:
         '404':
           description: Factory not found
     post:
-      summary: Create a new comment
+      summary: Create a new comment in a factory
       parameters:
         - in: path
-          name: name
+          name: id
           required: true
           schema:
-            type: string
-          description: The name of the factory
+            type: integer
+          description: The ID of the factory
       requestBody:
         required: true
         content:
@@ -451,18 +497,18 @@ paths:
               schema:
                 $ref: '#/components/schemas/Comment'
 
-  /factories/{name}/comments/{id}:
+  /factories/{id}/comments/{commentId}:
     get:
       summary: Get a comment by ID
       parameters:
         - in: path
-          name: name
+          name: id
           required: true
           schema:
-            type: string
-          description: The name of the factory
+            type: integer
+          description: The ID of the factory
         - in: path
-          name: id
+          name: commentId
           required: true
           schema:
             type: integer
@@ -480,13 +526,13 @@ paths:
       summary: Update a comment by ID
       parameters:
         - in: path
-          name: name
+          name: id
           required: true
           schema:
-            type: string
-          description: The name of the factory
+            type: integer
+          description: The ID of the factory
         - in: path
-          name: id
+          name: commentId
           required: true
           schema:
             type: integer
@@ -503,16 +549,16 @@ paths:
         '404':
           description: Comment not found
     delete:
-      summary: Logically delete a comment
+      summary: Logically delete a comment by ID
       parameters:
         - in: path
-          name: name
+          name: id
           required: true
           schema:
-            type: string
-          description: The name of the factory
+            type: integer
+          description: The ID of the factory
         - in: path
-          name: id
+          name: commentId
           required: true
           schema:
             type: integer
@@ -556,6 +602,8 @@ components:
     Factory:
       type: object
       properties:
+        id:
+          type: integer
         name:
           type: string
         location:
@@ -602,6 +650,8 @@ components:
     Chocolate:
       type: object
       properties:
+        id:
+          type: integer
         name:
           type: string
         price:
@@ -646,6 +696,8 @@ components:
     Comment:
       type: object
       properties:
+        id:
+          type: integer
         username:
           type: string
         text:

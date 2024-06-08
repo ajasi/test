@@ -21,6 +21,11 @@ const saveData = (data) => {
   fs.writeFileSync("./data/factories.json", JSON.stringify(data, null, 2));
 };
 
+const getNextId = (items) => {
+  const maxId = items.reduce((max, item) => (item.id > max ? item.id : max), 0);
+  return maxId + 1;
+};
+
 // User routes
 const users = JSON.parse(fs.readFileSync("./data/users.json", "utf-8"));
 
@@ -74,6 +79,7 @@ app.delete("/users/:username", (req, res) => {
 app.post("/factories", (req, res) => {
   const { name, location, workingHours, status, logo, managerUsername } = req.body;
   const newFactory = {
+    id: getNextId(data),
     name,
     location,
     workingHours,
@@ -96,7 +102,15 @@ app.get("/factories", (req, res) => {
   res.send(activeFactories);
 });
 
-app.get("/factories/:name", (req, res) => {
+app.get("/factories/:id", (req, res) => {
+  const factory = data.find((f) => f.id === parseInt(req.params.id) && !f.deleted);
+  if (!factory) {
+    return res.status(404).send("Factory not found");
+  }
+  res.send(factory);
+});
+
+app.get("/factories/name/:name", (req, res) => {
   const factory = data.find((f) => f.name === req.params.name && !f.deleted);
   if (!factory) {
     return res.status(404).send("Factory not found");
@@ -104,12 +118,13 @@ app.get("/factories/:name", (req, res) => {
   res.send(factory);
 });
 
-app.put("/factories/:name", (req, res) => {
-  const factory = data.find((f) => f.name === req.params.name && !f.deleted);
+app.put("/factories/:id", (req, res) => {
+  const factory = data.find((f) => f.id === parseInt(req.params.id) && !f.deleted);
   if (!factory) {
     return res.status(404).send("Factory not found");
   }
-  const { location, workingHours, status, logo, managerUsername, rating } = req.body;
+  const { name, location, workingHours, status, logo, managerUsername, rating } = req.body;
+  if (name) factory.name = name;
   if (location) factory.location = location;
   if (workingHours) factory.workingHours = workingHours;
   if (status) factory.status = status;
@@ -121,8 +136,8 @@ app.put("/factories/:name", (req, res) => {
   res.send("Factory updated");
 });
 
-app.delete("/factories/:name", (req, res) => {
-  const factory = data.find((f) => f.name === req.params.name);
+app.delete("/factories/:id", (req, res) => {
+  const factory = data.find((f) => f.id === parseInt(req.params.id));
   if (!factory) {
     return res.status(404).send("Factory not found");
   }
@@ -132,13 +147,14 @@ app.delete("/factories/:name", (req, res) => {
 });
 
 // Chocolates routes
-app.post("/factories/:name/chocolates", (req, res) => {
-  const factory = data.find((f) => f.name === req.params.name && !f.deleted);
+app.post("/factories/:id/chocolates", (req, res) => {
+  const factory = data.find((f) => f.id === parseInt(req.params.id) && !f.deleted);
   if (!factory) {
     return res.status(404).send("Factory not found");
   }
   const { name, price, type, kind, weight, description, image, status, quantity } = req.body;
   const newChocolate = {
+    id: getNextId(factory.chocolates),
     name,
     price,
     type,
@@ -155,8 +171,8 @@ app.post("/factories/:name/chocolates", (req, res) => {
   res.status(201).send(newChocolate);
 });
 
-app.get("/factories/:name/chocolates", (req, res) => {
-  const factory = data.find((f) => f.name === req.params.name && !f.deleted);
+app.get("/factories/:id/chocolates", (req, res) => {
+  const factory = data.find((f) => f.id === parseInt(req.params.id) && !f.deleted);
   if (!factory) {
     return res.status(404).send("Factory not found");
   }
@@ -164,8 +180,20 @@ app.get("/factories/:name/chocolates", (req, res) => {
   res.send(activeChocolates);
 });
 
-app.get("/factories/:name/chocolates/:chocolateName", (req, res) => {
-  const factory = data.find((f) => f.name === req.params.name && !f.deleted);
+app.get("/factories/:id/chocolates/:chocolateId", (req, res) => {
+  const factory = data.find((f) => f.id === parseInt(req.params.id) && !f.deleted);
+  if (!factory) {
+    return res.status(404).send("Factory not found");
+  }
+  const chocolate = factory.chocolates.find((c) => c.id === parseInt(req.params.chocolateId) && !c.deleted);
+  if (!chocolate) {
+    return res.status(404).send("Chocolate not found");
+  }
+  res.send(chocolate);
+});
+
+app.get("/factories/:id/chocolates/name/:chocolateName", (req, res) => {
+  const factory = data.find((f) => f.id === parseInt(req.params.id) && !f.deleted);
   if (!factory) {
     return res.status(404).send("Factory not found");
   }
@@ -176,16 +204,17 @@ app.get("/factories/:name/chocolates/:chocolateName", (req, res) => {
   res.send(chocolate);
 });
 
-app.put("/factories/:name/chocolates/:chocolateName", (req, res) => {
-  const factory = data.find((f) => f.name === req.params.name && !f.deleted);
+app.put("/factories/:id/chocolates/:chocolateId", (req, res) => {
+  const factory = data.find((f) => f.id === parseInt(req.params.id) && !f.deleted);
   if (!factory) {
     return res.status(404).send("Factory not found");
   }
-  const chocolate = factory.chocolates.find((c) => c.name === req.params.chocolateName && !c.deleted);
+  const chocolate = factory.chocolates.find((c) => c.id === parseInt(req.params.chocolateId) && !c.deleted);
   if (!chocolate) {
     return res.status(404).send("Chocolate not found");
   }
-  const { price, type, kind, weight, description, image, status, quantity } = req.body;
+  const { name, price, type, kind, weight, description, image, status, quantity } = req.body;
+  if (name) chocolate.name = name;
   if (price) chocolate.price = price;
   if (type) chocolate.type = type;
   if (kind) chocolate.kind = kind;
@@ -199,12 +228,12 @@ app.put("/factories/:name/chocolates/:chocolateName", (req, res) => {
   res.send("Chocolate updated");
 });
 
-app.delete("/factories/:name/chocolates/:chocolateName", (req, res) => {
-  const factory = data.find((f) => f.name === req.params.name);
+app.delete("/factories/:id/chocolates/:chocolateId", (req, res) => {
+  const factory = data.find((f) => f.id === parseInt(req.params.id));
   if (!factory) {
     return res.status(404).send("Factory not found");
   }
-  const chocolate = factory.chocolates.find((c) => c.name === req.params.chocolateName);
+  const chocolate = factory.chocolates.find((c) => c.id === parseInt(req.params.chocolateId));
   if (!chocolate) {
     return res.status(404).send("Chocolate not found");
   }
@@ -214,14 +243,14 @@ app.delete("/factories/:name/chocolates/:chocolateName", (req, res) => {
 });
 
 // Purchases routes
-app.post("/factories/:name/purchases", (req, res) => {
-  const factory = data.find((f) => f.name === req.params.name && !f.deleted);
+app.post("/factories/:id/purchases", (req, res) => {
+  const factory = data.find((f) => f.id === parseInt(req.params.id) && !f.deleted);
   if (!factory) {
     return res.status(404).send("Factory not found");
   }
-  const { id, chocolates, date, totalPrice, username, status } = req.body;
+  const { chocolates, date, totalPrice, username, status } = req.body;
   const newPurchase = {
-    id,
+    id: getNextId(factory.purchases),
     chocolates,
     date,
     totalPrice,
@@ -234,8 +263,8 @@ app.post("/factories/:name/purchases", (req, res) => {
   res.status(201).send(newPurchase);
 });
 
-app.get("/factories/:name/purchases", (req, res) => {
-  const factory = data.find((f) => f.name === req.params.name && !f.deleted);
+app.get("/factories/:id/purchases", (req, res) => {
+  const factory = data.find((f) => f.id === parseInt(req.params.id) && !f.deleted);
   if (!factory) {
     return res.status(404).send("Factory not found");
   }
@@ -243,24 +272,24 @@ app.get("/factories/:name/purchases", (req, res) => {
   res.send(activePurchases);
 });
 
-app.get("/factories/:name/purchases/:id", (req, res) => {
-  const factory = data.find((f) => f.name === req.params.name && !f.deleted);
+app.get("/factories/:id/purchases/:purchaseId", (req, res) => {
+  const factory = data.find((f) => f.id === parseInt(req.params.id) && !f.deleted);
   if (!factory) {
     return res.status(404).send("Factory not found");
   }
-  const purchase = factory.purchases.find((p) => p.id === parseInt(req.params.id) && !p.deleted);
+  const purchase = factory.purchases.find((p) => p.id === parseInt(req.params.purchaseId) && !p.deleted);
   if (!purchase) {
     return res.status(404).send("Purchase not found");
   }
   res.send(purchase);
 });
 
-app.put("/factories/:name/purchases/:id", (req, res) => {
-  const factory = data.find((f) => f.name === req.params.name && !f.deleted);
+app.put("/factories/:id/purchases/:purchaseId", (req, res) => {
+  const factory = data.find((f) => f.id === parseInt(req.params.id) && !f.deleted);
   if (!factory) {
     return res.status(404).send("Factory not found");
   }
-  const purchase = factory.purchases.find((p) => p.id === parseInt(req.params.id) && !p.deleted);
+  const purchase = factory.purchases.find((p) => p.id === parseInt(req.params.purchaseId) && !p.deleted);
   if (!purchase) {
     return res.status(404).send("Purchase not found");
   }
@@ -275,12 +304,12 @@ app.put("/factories/:name/purchases/:id", (req, res) => {
   res.send("Purchase updated");
 });
 
-app.delete("/factories/:name/purchases/:id", (req, res) => {
-  const factory = data.find((f) => f.name === req.params.name);
+app.delete("/factories/:id/purchases/:purchaseId", (req, res) => {
+  const factory = data.find((f) => f.id === parseInt(req.params.id));
   if (!factory) {
     return res.status(404).send("Factory not found");
   }
-  const purchase = factory.purchases.find((p) => p.id === parseInt(req.params.id));
+  const purchase = factory.purchases.find((p) => p.id === parseInt(req.params.purchaseId));
   if (!purchase) {
     return res.status(404).send("Purchase not found");
   }
@@ -290,13 +319,14 @@ app.delete("/factories/:name/purchases/:id", (req, res) => {
 });
 
 // Comments routes
-app.post("/factories/:name/comments", (req, res) => {
-  const factory = data.find((f) => f.name === req.params.name && !f.deleted);
+app.post("/factories/:id/comments", (req, res) => {
+  const factory = data.find((f) => f.id === parseInt(req.params.id) && !f.deleted);
   if (!factory) {
     return res.status(404).send("Factory not found");
   }
   const { username, text, rating } = req.body;
   const newComment = {
+    id: getNextId(factory.comments),
     username,
     text,
     rating,
@@ -307,8 +337,8 @@ app.post("/factories/:name/comments", (req, res) => {
   res.status(201).send(newComment);
 });
 
-app.get("/factories/:name/comments", (req, res) => {
-  const factory = data.find((f) => f.name === req.params.name && !f.deleted);
+app.get("/factories/:id/comments", (req, res) => {
+  const factory = data.find((f) => f.id === parseInt(req.params.id) && !f.deleted);
   if (!factory) {
     return res.status(404).send("Factory not found");
   }
@@ -316,24 +346,24 @@ app.get("/factories/:name/comments", (req, res) => {
   res.send(activeComments);
 });
 
-app.get("/factories/:name/comments/:id", (req, res) => {
-  const factory = data.find((f) => f.name === req.params.name && !f.deleted);
+app.get("/factories/:id/comments/:commentId", (req, res) => {
+  const factory = data.find((f) => f.id === parseInt(req.params.id) && !f.deleted);
   if (!factory) {
     return res.status(404).send("Factory not found");
   }
-  const comment = factory.comments.find((c) => c.id === parseInt(req.params.id) && !c.deleted);
+  const comment = factory.comments.find((c) => c.id === parseInt(req.params.commentId) && !c.deleted);
   if (!comment) {
     return res.status(404).send("Comment not found");
   }
   res.send(comment);
 });
 
-app.put("/factories/:name/comments/:id", (req, res) => {
-  const factory = data.find((f) => f.name === req.params.name && !f.deleted);
+app.put("/factories/:id/comments/:commentId", (req, res) => {
+  const factory = data.find((f) => f.id === parseInt(req.params.id) && !f.deleted);
   if (!factory) {
     return res.status(404).send("Factory not found");
   }
-  const comment = factory.comments.find((c) => c.id === parseInt(req.params.id) && !c.deleted);
+  const comment = factory.comments.find((c) => c.id === parseInt(req.params.commentId) && !c.deleted);
   if (!comment) {
     return res.status(404).send("Comment not found");
   }
@@ -345,12 +375,12 @@ app.put("/factories/:name/comments/:id", (req, res) => {
   res.send("Comment updated");
 });
 
-app.delete("/factories/:name/comments/:id", (req, res) => {
-  const factory = data.find((f) => f.name === req.params.name);
+app.delete("/factories/:id/comments/:commentId", (req, res) => {
+  const factory = data.find((f) => f.id === parseInt(req.params.id));
   if (!factory) {
     return res.status(404).send("Factory not found");
   }
-  const comment = factory.comments.find((c) => c.id === parseInt(req.params.id));
+  const comment = factory.comments.find((c) => c.id === parseInt(req.params.commentId));
   if (!comment) {
     return res.status(404).send("Comment not found");
   }

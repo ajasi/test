@@ -34,6 +34,11 @@ const isValidAddress = (address) => {
   return regex.test(address);
 };
 
+const hidePassword = (user) => {
+  const { password, ...userWithoutPassword } = user;
+  return userWithoutPassword;
+};
+
 // Middleware for checking user roles
 const checkRole = (allowedRoles) => {
   return (req, res, next) => {
@@ -151,7 +156,7 @@ app.post("/register", (req, res) => {
   users.push(newUser);
   saveData(users, './data/users.json');
   saveData(carts, './data/carts.json');
-  res.status(201).send(newUser);
+  res.status(201).send(hidePassword(newUser));
 });
 
 app.post("/login", (req, res) => {
@@ -162,7 +167,7 @@ app.post("/login", (req, res) => {
   }
   user.loggedIn = true;
   saveData(users, './data/users.json');
-  res.send(user);
+  res.send(hidePassword(user));
 });
 
 app.post("/logout", (req, res) => {
@@ -213,7 +218,7 @@ app.put("/users/:username", checkRole(['Administrator']), (req, res) => {
   if (customerTypeId) user.customerTypeId = customerTypeId;
 
   saveData(users, './data/users.json');
-  res.send('User updated');
+  res.send("User updated");
 });
 
 app.delete("/users/:username", checkRole(['Administrator']), (req, res) => {
@@ -245,7 +250,10 @@ app.post("/factories", checkRole(['Administrator']), (req, res) => {
     id: getNextId(data),
     name,
     location,
-    workingHours,
+    workingHours: {
+      from: workingHours.from,
+      to: workingHours.to
+    },
     status: 'active',
     logo,
     managerId,
@@ -272,7 +280,7 @@ app.get("/factories/:id", (req, res) => {
     return res.status(404).send("Factory not found");
   }
   const manager = users.find(user => user.id === factory.managerId && !user.deleted);
-  factory.manager = manager ? { id: manager.id, username: manager.username, firstName: manager.firstName, lastName: manager.lastName } : null;
+  factory.manager = manager ? hidePassword({ id: manager.id, username: manager.username, firstName: manager.firstName, lastName: manager.lastName }) : null;
   res.send(factory);
 });
 
@@ -282,7 +290,7 @@ app.get("/factories/name/:name", (req, res) => {
     return res.status(404).send("Factory not found");
   }
   const manager = users.find(user => user.id === factory.managerId && !user.deleted);
-  factory.manager = manager ? { id: manager.id, username: manager.username, firstName: manager.firstName, lastName: manager.lastName } : null;
+  factory.manager = manager ? hidePassword({ id: manager.id, username: manager.username, firstName: manager.firstName, lastName: manager.lastName }) : null;
   res.send(factory);
 });
 
@@ -439,18 +447,39 @@ app.post("/factories/:id/purchases", checkRole(['Customer']), (req, res) => {
   if (!factory) {
     return res.status(404).send("Factory not found");
   }
-  const { chocolates, date, totalPrice, username, status } = req.body;
+  const username = req.headers['username'];
+  const user = users.find(u => u.username === username && !u.deleted);
+  const cart = carts.find(c => c.id === user.cartId);
+  if (!cart) {
+    return res.status(404).send("Cart not found");
+  }
+  let totalPrice = 0;
+  for (const item of cart.items) {
+    const chocolate = factory.chocolates.find(c => c.id === item.chocolateId && !c.deleted);
+    if (!chocolate || chocolate.quantity < item.quantity) {
+      return res.status(400).send("Insufficient stock for chocolate: " + item.chocolateId);
+    }
+    totalPrice += chocolate.price * item.quantity;
+  }
+  for (const item of cart.items) {
+    const chocolate = factory.chocolates.find(c => c.id === item.chocolateId && !c.deleted);
+    chocolate.quantity -= item.quantity;
+  }
   const newPurchase = {
     id: getNextId(factory.purchases),
-    chocolates,
-    date,
+    chocolates: cart.items.map(item => ({ chocolateId: item.chocolateId, quantity: item.quantity })),
+    date: new Date().toISOString(),
     totalPrice,
     username,
-    status,
+    status: "Processing",
     deleted: false,
   };
   factory.purchases.push(newPurchase);
+  user.points += (totalPrice / 1000) * 133;
+  cart.items = [];
   saveData(data, './data/factories.json');
+  saveData(users, './data/users.json');
+  saveData(carts, './data/carts.json');
   res.status(201).send(newPurchase);
 });
 
@@ -475,7 +504,7 @@ app.get("/factories/:id/purchases/:purchaseId", checkRole(['Administrator', 'Man
   res.send(purchase);
 });
 
-app.put("/factories/:id/purchases/:purchaseId", checkRole(['Administrator', 'Manager', 'Worker']), (req, res) => {
+app.put("/factories/:id/purchases/:purchaseId", checkRole(['Administrator', 'Manager']), (req, res) => {
   const factory = data.find((f) => f.id === parseInt(req.params.id) && !f.deleted);
   if (!factory) {
     return res.status(404).send("Factory not found");
@@ -484,18 +513,25 @@ app.put("/factories/:id/purchases/:purchaseId", checkRole(['Administrator', 'Man
   if (!purchase) {
     return res.status(404).send("Purchase not found");
   }
-  const { chocolates, date, totalPrice, username, status } = req.body;
-  if (chocolates) purchase.chocolates = chocolates;
-  if (date) purchase.date = date;
-  if (totalPrice) purchase.totalPrice = totalPrice;
-  if (username) purchase.username = username;
-  if (status) purchase.status = status;
-
+  const { status, comment } = req.body;
+  if (status === "Approved" || status === "Rejected") {
+    if (status === "Rejected" && !comment) {
+      return res.status(400).send("Comment is required for rejected purchases");
+    }
+    if (status === "Rejected") {
+      for (const item of purchase.chocolates) {
+        const chocolate = factory.chocolates.find(c => c.id === item.chocolateId && !c.deleted);
+        chocolate.quantity += item.quantity;
+      }
+    }
+  }
+  purchase.status = status;
+  if (comment) purchase.comment = comment;
   saveData(data, './data/factories.json');
   res.send("Purchase updated");
 });
 
-app.delete("/factories/:id/purchases/:purchaseId", checkRole(['Administrator', 'Manager', 'Worker']), (req, res) => {
+app.delete("/factories/:id/purchases/:purchaseId", checkRole(['Customer']), (req, res) => {
   const factory = data.find((f) => f.id === parseInt(req.params.id));
   if (!factory) {
     return res.status(404).send("Factory not found");
@@ -504,9 +540,19 @@ app.delete("/factories/:id/purchases/:purchaseId", checkRole(['Administrator', '
   if (!purchase) {
     return res.status(404).send("Purchase not found");
   }
-  purchase.deleted = true;
+  if (purchase.status !== "Processing") {
+    return res.status(400).send("Only purchases in Processing status can be cancelled");
+  }
+  purchase.status = "Cancelled";
+  const user = users.find(u => u.username === purchase.username && !u.deleted);
+  for (const item of purchase.chocolates) {
+    const chocolate = factory.chocolates.find(c => c.id === item.chocolateId && !c.deleted);
+    chocolate.quantity += item.quantity;
+  }
+  user.points -= (purchase.totalPrice / 1000) * 133 * 4;
   saveData(data, './data/factories.json');
-  res.send("Purchase deleted");
+  saveData(users, './data/users.json');
+  res.send("Purchase cancelled");
 });
 
 // Comments routes
@@ -688,7 +734,7 @@ app.put("/cart/:username", checkRole(['Customer']), (req, res) => {
   res.send(cart);
 });
 
-app.delete("/cart/:username", checkRole(['Customer']), (req, res) => {
+app.delete("/cart/:username/:factoryId/:chocolateId", checkRole(['Customer']), (req, res) => {
   const user = users.find(u => u.username === req.params.username && !u.deleted);
   if (!user) {
     return res.status(404).send("User not found");
@@ -696,10 +742,10 @@ app.delete("/cart/:username", checkRole(['Customer']), (req, res) => {
   if (user.username !== req.headers['username']) {
     return res.status(403).send("Access denied");
   }
-  const { chocolateId, factoryId } = req.body;
+  const { factoryId, chocolateId } = req.params;
 
   const cart = carts.find(c => c.id === user.cartId);
-  const itemIndex = cart.items.findIndex(i => i.chocolateId === chocolateId && i.factoryId === factoryId);
+  const itemIndex = cart.items.findIndex(i => i.chocolateId === parseInt(chocolateId) && i.factoryId === parseInt(factoryId));
   if (itemIndex === -1) {
     return res.status(404).send("Item not found in cart");
   }

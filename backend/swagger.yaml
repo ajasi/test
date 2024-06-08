@@ -333,27 +333,6 @@ paths:
           description: Access denied
         '404':
           description: Chocolate not found
-  /factories/{id}/chocolates/name/{chocolateName}:
-    get:
-      summary: Get a chocolate by name
-      parameters:
-        - in: path
-          name: id
-          required: true
-          schema:
-            type: integer
-          description: The ID of the factory
-        - in: path
-          name: chocolateName
-          required: true
-          schema:
-            type: string
-          description: The name of the chocolate to retrieve
-      responses:
-        '200':
-          description: Chocolate data
-        '404':
-          description: Chocolate not found
   /factories/{id}/purchases:
     post:
       summary: Create a new purchase in a factory
@@ -650,6 +629,61 @@ paths:
           description: Access denied
         '404':
           description: User or cart not found
+    put:
+      summary: Update cart item
+      parameters:
+        - in: path
+          name: username
+          required: true
+          schema:
+            type: string
+          description: The username of the user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CartItem'
+      responses:
+        '200':
+          description: Cart item updated
+        '400':
+          description: Invalid input
+        '401':
+          description: Invalid credentials
+        '404':
+          description: User or cart not found
+  /cart/{username}/{factoryId}/{chocolateId}:
+    delete:
+      summary: Delete cart item
+      parameters:
+        - in: path
+          name: username
+          required: true
+          schema:
+            type: string
+          description: The username of the user
+        - in: path
+          name: factoryId
+          required: true
+          schema:
+            type: integer
+          description: The ID of the factory
+        - in: path
+          name: chocolateId
+          required: true
+          schema:
+            type: integer
+          description: The ID of the chocolate
+      responses:
+        '200':
+          description: Cart item deleted
+        '400':
+          description: Invalid input
+        '401':
+          description: Invalid credentials
+        '404':
+          description: User or cart not found
 
 components:
   schemas:
@@ -726,7 +760,12 @@ components:
             address:
               type: string
         workingHours:
-          type: string
+          type: object
+          properties:
+            from:
+              type: string
+            to:
+              type: string
         status:
           type: string
         logo:
@@ -810,6 +849,9 @@ components:
           type: string
         status:
           type: string
+        comment:
+          type: string
+          nullable: true
         deleted:
           type: boolean
     Comment:

@@ -11,14 +11,51 @@
     "loggedIn": false
   },
   {
-    "username": "stringsa",
-    "password": "string",
+    "username": "manag",
+    "password": "qq",
     "firstName": "string",
     "lastName": "string",
     "gender": "string",
     "birthDate": "string",
     "role": "Manager",
+    "factoryId": 1,
     "deleted": false,
-    "loggedIn": false
+    "loggedIn": true,
+    "cartId": null,
+    "purchaseIds": [],
+    "points": 0,
+    "customerTypeId": null
+  },
+  {
+    "username": "manag2",
+    "password": "qq",
+    "firstName": "string",
+    "lastName": "string",
+    "gender": "string",
+    "birthDate": "string",
+    "role": "Manager",
+    "factoryId": 2,
+    "deleted": false,
+    "loggedIn": false,
+    "cartId": null,
+    "purchaseIds": [],
+    "points": 0,
+    "customerTypeId": null
+  },
+  {
+    "username": "buy",
+    "password": "qq",
+    "firstName": "John",
+    "lastName": "Doe",
+    "gender": "male",
+    "birthDate": "1.1.1900",
+    "role": "Customer",
+    "factoryId": null,
+    "deleted": false,
+    "loggedIn": true,
+    "cartId": 2,
+    "purchaseIds": [],
+    "points": 0,
+    "customerTypeId": null
   }
 ]

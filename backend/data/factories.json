@@ -10,7 +10,6 @@
     "workingHours": "9am - 5pm",
     "status": "Open",
     "logo": "https://bcassetcdn.com/public/blog/wp-content/uploads/2021/10/18190510/Ferrero-Rocher.png",
-    "managerUsername": "manager1",
     "rating": "4",
     "comments": [
       {
@@ -146,7 +145,6 @@
     "workingHours": "9am - 5pm",
     "status": "Closed",
     "logo": "https://bcassetcdn.com/public/blog/wp-content/uploads/2021/10/18190854/Lindt.png",
-    "managerUsername": "manager2",
     "rating": "5",
     "comments": [],
     "chocolates": [
@@ -178,7 +176,6 @@
     "workingHours": "9am - 5pm",
     "status": "Closed",
     "logo": "https://bcassetcdn.com/public/blog/wp-content/uploads/2021/10/18191027/Dove.png",
-    "managerUsername": "manager2",
     "rating": "5",
     "comments": [
       {
@@ -203,7 +200,6 @@
     "workingHours": "9am - 5pm",
     "status": "Open",
     "logo": "https://bcassetcdn.com/public/blog/wp-content/uploads/2021/10/18191438/Frans-Chocolates.png",
-    "managerUsername": "manager2",
     "rating": "5",
     "comments": [],
     "chocolates": [],
@@ -221,7 +217,6 @@
     "workingHours": "9am - 5pm",
     "status": "Open",
     "logo": "https://bcassetcdn.com/public/blog/wp-content/uploads/2021/10/18191514/ritter-sport.png",
-    "managerUsername": "manager2",
     "rating": "5",
     "comments": [
       {
@@ -256,7 +251,6 @@
     "workingHours": "9am - 5pm",
     "status": "Open",
     "logo": "https://bcassetcdn.com/public/blog/wp-content/uploads/2021/10/18191535/Teuscher.png",
-    "managerUsername": "manager2",
     "rating": "5",
     "comments": [],
     "chocolates": [],
@@ -274,7 +268,6 @@
     "workingHours": "9am - 5pm",
     "status": "Open",
     "logo": "https://bcassetcdn.com/public/blog/wp-content/uploads/2021/10/18191535/Teuscher.png",
-    "managerUsername": "manager2",
     "rating": 0,
     "comments": [],
     "chocolates": [],

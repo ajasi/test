@@ -16,6 +16,8 @@ app.get("/", (req, res) => {
 // Load data
 const data = JSON.parse(fs.readFileSync("./data/factories.json", "utf-8"));
 const users = JSON.parse(fs.readFileSync("./data/users.json", "utf-8"));
+const carts = JSON.parse(fs.readFileSync("./data/carts.json", "utf-8"));
+const customerTypes = JSON.parse(fs.readFileSync("./data/customerTypes.json", "utf-8"));
 
 // Helper functions
 const saveData = (data, filePath) => {
@@ -49,19 +51,40 @@ const checkRole = (allowedRoles) => {
   };
 };
 
+const checkManagerOrWorker = (req, res, next) => {
+  const username = req.headers['username'];
+  const user = users.find(u => u.username === username && !u.deleted);
+
+  if (!user || !user.loggedIn) {
+    return res.status(401).send("User not logged in");
+  }
+
+  if (user.role === 'Manager' && user.factoryId !== parseInt(req.params.id)) {
+    return res.status(403).send("Access denied");
+  }
+
+  if (user.role === 'Worker' && user.factoryId !== parseInt(req.params.id)) {
+    return res.status(403).send("Access denied");
+  }
+
+  next();
+};
+
 // User routes
 app.post("/register", (req, res) => {
-  const { username, password, firstName, lastName, gender, birthDate, role } = req.body;
-  const allowedRoles = ['Customer', 'Worker', 'Manager'];
-  
+  const { username, password, firstName, lastName, gender, birthDate, role, factoryId } = req.body;
+  const allowedRoles = ['Customer', 'Worker', 'Manager', 'Administrator'];
+
   if (!allowedRoles.includes(role)) {
     return res.status(400).send('Invalid role');
   }
 
   const creatingUsername = req.headers['username'];
+  let creatingUser = null;
+
   if (creatingUsername) {
-    const creatingUser = users.find(user => user.username === creatingUsername && !user.deleted);
-    
+    creatingUser = users.find(user => user.username === creatingUsername && !user.deleted);
+
     if (!creatingUser || !creatingUser.loggedIn) {
       return res.status(401).send('Invalid credentials');
     }
@@ -70,8 +93,28 @@ app.post("/register", (req, res) => {
       return res.status(403).send('Only Administrator can create a Manager');
     }
 
-    if (role === 'Worker' && creatingUser.role !== 'Manager') {
-      return res.status(403).send('Only Manager can create a Worker');
+    if (role === 'Worker') {
+      if (creatingUser.role !== 'Manager') {
+        return res.status(403).send('Only Manager can create a Worker');
+      }
+      req.body.factoryId = creatingUser.factoryId;
+    }
+  } else {
+    if (role !== 'Customer') {
+      return res.status(403).send('Only Customer can be created without authentication');
+    }
+  }
+
+  if (role === 'Manager' || role === 'Worker') {
+    const factory = data.find(f => f.id === req.body.factoryId && !f.deleted);
+    if (!factory) {
+      return res.status(400).send('Invalid factory ID');
+    }
+    if (role === 'Manager') {
+      const existingManager = users.find(user => user.role === 'Manager' && user.factoryId === req.body.factoryId && !user.deleted);
+      if (existingManager) {
+        return res.status(400).send('A non-deleted manager already exists for this factory');
+      }
     }
   }
 
@@ -79,9 +122,35 @@ app.post("/register", (req, res) => {
     return res.status(400).send('Username already exists');
   }
 
-  const newUser = { username, password, firstName, lastName, gender, birthDate, role, deleted: false, loggedIn: false };
+  const newUser = { 
+    username, 
+    password, 
+    firstName, 
+    lastName, 
+    gender, 
+    birthDate, 
+    role, 
+    factoryId: role !== 'Customer' ? req.body.factoryId : null, 
+    deleted: false, 
+    loggedIn: false,
+    cartId: null,
+    purchaseIds: [],
+    points: 0,
+    customerTypeId: null
+  };
+
+  if (role === 'Customer') {
+    const newCart = {
+      id: getNextId(carts),
+      items: []
+    };
+    carts.push(newCart);
+    newUser.cartId = newCart.id;
+  }
+
   users.push(newUser);
   saveData(users, './data/users.json');
+  saveData(carts, './data/carts.json');
   res.status(201).send(newUser);
 });
 
@@ -112,10 +181,23 @@ app.put("/users/:username", checkRole(['Administrator']), (req, res) => {
   if (!user) {
     return res.status(404).send('User not found');
   }
-  const { password, firstName, lastName, gender, birthDate, role } = req.body;
+  const { password, firstName, lastName, gender, birthDate, role, factoryId, cartId, purchaseIds, points, customerTypeId } = req.body;
 
   if (role && user.role === 'Customer' && role === 'Manager') {
     return res.status(403).send('Customer cannot change role to Manager');
+  }
+
+  if (['Manager', 'Worker'].includes(role)) {
+    const factory = data.find(f => f.id === factoryId && !f.deleted);
+    if (!factory) {
+      return res.status(400).send('Invalid factory ID');
+    }
+    if (role === 'Manager') {
+      const existingManager = users.find(user => user.role === 'Manager' && user.factoryId === factoryId && !user.deleted);
+      if (existingManager) {
+        return res.status(400).send('A non-deleted manager already exists for this factory');
+      }
+    }
   }
 
   if (password) user.password = password;
@@ -124,6 +206,11 @@ app.put("/users/:username", checkRole(['Administrator']), (req, res) => {
   if (gender) user.gender = gender;
   if (birthDate) user.birthDate = birthDate;
   if (role) user.role = role;
+  if (factoryId) user.factoryId = factoryId;
+  if (cartId) user.cartId = cartId;
+  if (purchaseIds) user.purchaseIds = purchaseIds;
+  if (points) user.points = points;
+  if (customerTypeId) user.customerTypeId = customerTypeId;
 
   saveData(users, './data/users.json');
   res.send('User updated');
@@ -141,18 +228,27 @@ app.delete("/users/:username", checkRole(['Administrator']), (req, res) => {
 
 // Factories routes
 app.post("/factories", checkRole(['Administrator']), (req, res) => {
-  const { name, location, workingHours, status, logo, managerUsername } = req.body;
+  const { name, location, workingHours, logo, managerId } = req.body;
+  if (!name || !location || !workingHours || !logo || !managerId) {
+    return res.status(400).send('Name, location, working hours, logo, and manager are required');
+  }
   if (!isValidAddress(location.address)) {
     return res.status(400).send('Invalid address format. Expected format: [street and number], [city], [postal code]');
   }
+  const manager = users.find(user => user.id === managerId && user.role === 'Manager');
+  if (!manager || manager.factoryId !== null) {
+    return res.status(400).send('Manager is already assigned to another factory or does not exist');
+  }
+  manager.factoryId = getNextId(data);  // Assign manager to the new factory
+
   const newFactory = {
     id: getNextId(data),
     name,
     location,
     workingHours,
-    status,
+    status: 'active',
     logo,
-    managerUsername,
+    managerId,
     rating: 0,
     comments: [],
     chocolates: [],
@@ -161,6 +257,7 @@ app.post("/factories", checkRole(['Administrator']), (req, res) => {
   };
   data.push(newFactory);
   saveData(data, './data/factories.json');
+  saveData(users, './data/users.json');
   res.status(201).send(newFactory);
 });
 
@@ -174,6 +271,8 @@ app.get("/factories/:id", (req, res) => {
   if (!factory) {
     return res.status(404).send("Factory not found");
   }
+  const manager = users.find(user => user.id === factory.managerId && !user.deleted);
+  factory.manager = manager ? { id: manager.id, username: manager.username, firstName: manager.firstName, lastName: manager.lastName } : null;
   res.send(factory);
 });
 
@@ -182,6 +281,8 @@ app.get("/factories/name/:name", (req, res) => {
   if (!factory) {
     return res.status(404).send("Factory not found");
   }
+  const manager = users.find(user => user.id === factory.managerId && !user.deleted);
+  factory.manager = manager ? { id: manager.id, username: manager.username, firstName: manager.firstName, lastName: manager.lastName } : null;
   res.send(factory);
 });
 
@@ -190,7 +291,7 @@ app.put("/factories/:id", checkRole(['Administrator', 'Manager']), (req, res) =>
   if (!factory) {
     return res.status(404).send("Factory not found");
   }
-  const { name, location, workingHours, status, logo, managerUsername, rating } = req.body;
+  const { name, location, workingHours, status, logo, rating } = req.body;
   if (rating && (rating < 1 || rating > 5)) {
     return res.status(400).send('Rating must be between 1 and 5');
   }
@@ -202,7 +303,6 @@ app.put("/factories/:id", checkRole(['Administrator', 'Manager']), (req, res) =>
   if (workingHours) factory.workingHours = workingHours;
   if (status) factory.status = status;
   if (logo) factory.logo = logo;
-  if (managerUsername) factory.managerUsername = managerUsername;
   if (rating) factory.rating = rating;
 
   saveData(data, './data/factories.json');
@@ -220,11 +320,19 @@ app.delete("/factories/:id", checkRole(['Administrator']), (req, res) => {
 });
 
 // Chocolates routes
-app.post("/factories/:id/chocolates", checkRole(['Administrator', 'Manager']), (req, res) => {
+app.post("/factories/:id/chocolates", checkManagerOrWorker, (req, res) => {
   const factory = data.find((f) => f.id === parseInt(req.params.id) && !f.deleted);
   if (!factory) {
     return res.status(404).send("Factory not found");
   }
+
+  const username = req.headers['username'];
+  const user = users.find(u => u.username === username && !u.deleted);
+
+  if (user.role !== 'Manager') {
+    return res.status(403).send("Only Managers can create chocolates");
+  }
+
   const { name, price, type, kind, weight, description, image } = req.body;
   const newChocolate = {
     id: getNextId(factory.chocolates),
@@ -277,7 +385,7 @@ app.get("/factories/:id/chocolates/name/:chocolateName", (req, res) => {
   res.send(chocolate);
 });
 
-app.put("/factories/:id/chocolates/:chocolateId", checkRole(['Administrator', 'Manager']), (req, res) => {
+app.put("/factories/:id/chocolates/:chocolateId", checkManagerOrWorker, (req, res) => {
   const factory = data.find((f) => f.id === parseInt(req.params.id) && !f.deleted);
   if (!factory) {
     return res.status(404).send("Factory not found");
@@ -286,16 +394,26 @@ app.put("/factories/:id/chocolates/:chocolateId", checkRole(['Administrator', 'M
   if (!chocolate) {
     return res.status(404).send("Chocolate not found");
   }
-  const { name, price, type, kind, weight, description, image, quantity } = req.body;
-  if (name) chocolate.name = name;
-  if (price) chocolate.price = price;
-  if (type) chocolate.type = type;
-  if (kind) chocolate.kind = kind;
-  if (weight) chocolate.weight = weight;
-  if (description) chocolate.description = description;
-  if (image) chocolate.image = image;
-  if (quantity !== null) chocolate.quantity = quantity;
-  chocolate.status = quantity > 0 ? "In stock" : "Out of stock";
+
+  const username = req.headers['username'];
+  const user = users.find(u => u.username === username && !u.deleted);
+
+  if (user.role === 'Worker') {
+    const { quantity } = req.body;
+    if (quantity !== null) chocolate.quantity = quantity;
+    chocolate.status = quantity > 0 ? "In stock" : "Out of stock";
+  } else {
+    const { name, price, type, kind, weight, description, image, quantity } = req.body;
+    if (name) chocolate.name = name;
+    if (price) chocolate.price = price;
+    if (type) chocolate.type = type;
+    if (kind) chocolate.kind = kind;
+    if (weight) chocolate.weight = weight;
+    if (description) chocolate.description = description;
+    if (image) chocolate.image = image;
+    if (quantity !== null) chocolate.quantity = quantity;
+    chocolate.status = quantity > 0 ? "In stock" : "Out of stock";
+  }
 
   saveData(data, './data/factories.json');
   res.send("Chocolate updated");
@@ -398,14 +516,14 @@ app.post("/factories/:id/comments", (req, res) => {
     return res.status(404).send("Factory not found");
   }
   const { username, text, rating } = req.body;
-  if (rating < 1 || rating > 5) {
+  if (rating && (rating < 1 || rating > 5)) {
     return res.status(400).send('Rating must be between 1 and 5');
   }
   const newComment = {
     id: getNextId(factory.comments),
     username,
     text,
-    rating,
+    rating: rating || null,
     approved: false,
     deleted: false,
   };
@@ -468,6 +586,127 @@ app.delete("/factories/:id/comments/:commentId", checkRole(['Administrator', 'Ma
   comment.deleted = true;
   saveData(data, './data/factories.json');
   res.send("Comment deleted");
+});
+
+// Cart routes
+app.post("/cart", checkRole(['Customer']), (req, res) => {
+  const username = req.headers['username'];
+  const user = users.find(u => u.username === username && !u.deleted);
+  const { chocolateId, factoryId, quantity } = req.body;
+
+  const factory = data.find(f => f.id === factoryId && !f.deleted);
+  if (!factory) {
+    return res.status(404).send("Factory not found");
+  }
+
+  const chocolate = factory.chocolates.find(c => c.id === chocolateId && !c.deleted);
+  if (!chocolate) {
+    return res.status(404).send("Chocolate not found");
+  }
+
+  const cart = carts.find(c => c.id === user.cartId);
+  const existingItem = cart.items.find(item => item.chocolateId === chocolateId && item.factoryId === factoryId);
+
+  if (existingItem) {
+    const newQuantity = existingItem.quantity + quantity;
+    if (newQuantity > chocolate.quantity) {
+      return res.status(400).send("Quantity exceeds available stock");
+    }
+    existingItem.quantity = newQuantity;
+  } else {
+    if (quantity > chocolate.quantity) {
+      return res.status(400).send("Quantity exceeds available stock");
+    }
+    cart.items.push({ chocolateId, factoryId, quantity });
+  }
+
+  saveData(carts, './data/carts.json');
+  res.status(201).send(cart);
+});
+
+app.get("/cart/:username", checkRole(['Customer']), (req, res) => {
+  const user = users.find(u => u.username === req.params.username && !u.deleted);
+  if (!user) {
+    return res.status(404).send("User not found");
+  }
+  if (user.username !== req.headers['username']) {
+    return res.status(403).send("Access denied");
+  }
+  const cart = carts.find(c => c.id === user.cartId);
+  if (!cart) {
+    return res.status(404).send("Cart not found");
+  }
+
+  const cartDetails = cart.items.map(item => {
+    const factory = data.find(f => f.id === item.factoryId);
+    const chocolate = factory.chocolates.find(c => c.id === item.chocolateId);
+    return {
+      chocolateId: item.chocolateId,
+      factoryId: item.factoryId,
+      quantity: item.quantity,
+      factoryName: factory.name,
+      chocolate,
+      totalPrice: item.quantity * chocolate.price
+    };
+  });
+
+  res.send(cartDetails);
+});
+
+app.put("/cart/:username", checkRole(['Customer']), (req, res) => {
+  const user = users.find(u => u.username === req.params.username && !u.deleted);
+  if (!user) {
+    return res.status(404).send("User not found");
+  }
+  if (user.username !== req.headers['username']) {
+    return res.status(403).send("Access denied");
+  }
+  const { chocolateId, factoryId, quantity } = req.body;
+
+  const cart = carts.find(c => c.id === user.cartId);
+  const item = cart.items.find(i => i.chocolateId === chocolateId && i.factoryId === factoryId);
+  if (!item) {
+    return res.status(404).send("Item not found in cart");
+  }
+
+  const factory = data.find(f => f.id === factoryId && !f.deleted);
+  if (!factory) {
+    return res.status(404).send("Factory not found");
+  }
+
+  const chocolate = factory.chocolates.find(c => c.id === chocolateId && !c.deleted);
+  if (!chocolate) {
+    return res.status(404).send("Chocolate not found");
+  }
+
+  if (quantity > chocolate.quantity) {
+    return res.status(400).send("Quantity exceeds available stock");
+  }
+
+  item.quantity = quantity;
+  saveData(carts, './data/carts.json');
+  res.send(cart);
+});
+
+app.delete("/cart/:username", checkRole(['Customer']), (req, res) => {
+  const user = users.find(u => u.username === req.params.username && !u.deleted);
+  if (!user) {
+    return res.status(404).send("User not found");
+  }
+  if (user.username !== req.headers['username']) {
+    return res.status(403).send("Access denied");
+  }
+  const { chocolateId, factoryId } = req.body;
+
+  const cart = carts.find(c => c.id === user.cartId);
+  const itemIndex = cart.items.findIndex(i => i.chocolateId === chocolateId && i.factoryId === factoryId);
+  if (itemIndex === -1) {
+    return res.status(404).send("Item not found in cart");
+  }
+
+  cart.items.splice(itemIndex, 1);
+  saveData(carts, './data/carts.json');
+  res.send(cart);
 });
 
 app.listen(port, () => {

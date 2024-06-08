@@ -1,1 +1,21 @@
-[]
+[
+  {
+    "id": 1,
+    "items": []
+  },
+  {
+    "id": 2,
+    "items": [
+      {
+        "chocolateId": 2,
+        "factoryId": 1,
+        "quantity": 30
+      },
+      {
+        "chocolateId": 3,
+        "factoryId": 1,
+        "quantity": 50
+      }
+    ]
+  }
+]

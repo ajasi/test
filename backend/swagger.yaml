@@ -13,60 +13,28 @@ paths:
       summary: Welcome message
       responses:
         '200':
-          description: Successful response
-          content:
-            text/plain:
-              schema:
-                type: string
-
+          description: Welcome message
   /register:
     post:
       summary: Register a new user
-      parameters:
-        - in: header
-          name: username
-          schema:
-            type: string
-          description: The username of the user making the request (optional)
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              type: object
-              properties:
-                username:
-                  type: string
-                password:
-                  type: string
-                firstName:
-                  type: string
-                lastName:
-                  type: string
-                gender:
-                  type: string
-                birthDate:
-                  type: string
-                role:
-                  type: string
-                  enum: [Customer, Worker, Manager]
+              $ref: '#/components/schemas/User'
       responses:
         '201':
           description: User registered
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/User'
         '400':
-          description: Invalid role or username already exists
+          description: Invalid input
         '401':
           description: Invalid credentials
         '403':
           description: Access denied
-
   /login:
     post:
-      summary: User login
+      summary: Login a user
       requestBody:
         required: true
         content:
@@ -76,16 +44,11 @@ paths:
       responses:
         '200':
           description: User logged in
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/User'
         '401':
           description: Invalid credentials
-
   /logout:
     post:
-      summary: User logout
+      summary: Logout a user
       parameters:
         - in: header
           name: username
@@ -98,10 +61,9 @@ paths:
           description: User logged out
         '401':
           description: User not logged in
-
   /users/{username}:
     put:
-      summary: Update user information
+      summary: Update a user by username
       parameters:
         - in: path
           name: username
@@ -109,12 +71,6 @@ paths:
           schema:
             type: string
           description: The username of the user to update
-        - in: header
-          name: username
-          required: true
-          schema:
-            type: string
-          description: The username of the user making the request
       requestBody:
         required: true
         content:
@@ -124,12 +80,16 @@ paths:
       responses:
         '200':
           description: User updated
-        '404':
-          description: User not found
+        '400':
+          description: Invalid input
+        '401':
+          description: Invalid credentials
         '403':
           description: Access denied
+        '404':
+          description: User not found
     delete:
-      summary: Logically delete a user
+      summary: Delete a user by username
       parameters:
         - in: path
           name: username
@@ -137,21 +97,33 @@ paths:
           schema:
             type: string
           description: The username of the user to delete
-        - in: header
-          name: username
-          required: true
-          schema:
-            type: string
-          description: The username of the user making the request
       responses:
         '200':
           description: User deleted
-        '404':
-          description: User not found
+        '401':
+          description: Invalid credentials
         '403':
           description: Access denied
-
+        '404':
+          description: User not found
   /factories:
+    post:
+      summary: Create a new factory
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Factory'
+      responses:
+        '201':
+          description: Factory created
+        '400':
+          description: Invalid input
+        '401':
+          description: Invalid credentials
+        '403':
+          description: Access denied
     get:
       summary: Get all factories
       responses:
@@ -163,31 +135,6 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/Factory'
-    post:
-      summary: Create a new factory
-      parameters:
-        - in: header
-          name: username
-          required: true
-          schema:
-            type: string
-          description: The username of the user making the request
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/Factory'
-      responses:
-        '201':
-          description: Factory created
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Factory'
-        '403':
-          description: Access denied
-
   /factories/{id}:
     get:
       summary: Get a factory by ID
@@ -197,14 +144,10 @@ paths:
           required: true
           schema:
             type: integer
-          description: The ID of the factory
+          description: The ID of the factory to retrieve
       responses:
         '200':
-          description: A factory object
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Factory'
+          description: Factory data
         '404':
           description: Factory not found
     put:
@@ -215,13 +158,7 @@ paths:
           required: true
           schema:
             type: integer
-          description: The ID of the factory
-        - in: header
-          name: username
-          required: true
-          schema:
-            type: string
-          description: The username of the user making the request
+          description: The ID of the factory to update
       requestBody:
         required: true
         content:
@@ -231,33 +168,32 @@ paths:
       responses:
         '200':
           description: Factory updated
-        '404':
-          description: Factory not found
+        '400':
+          description: Invalid input
+        '401':
+          description: Invalid credentials
         '403':
           description: Access denied
+        '404':
+          description: Factory not found
     delete:
-      summary: Logically delete a factory by ID
+      summary: Delete a factory by ID
       parameters:
         - in: path
           name: id
           required: true
           schema:
             type: integer
-          description: The ID of the factory
-        - in: header
-          name: username
-          required: true
-          schema:
-            type: string
-          description: The username of the user making the request
+          description: The ID of the factory to delete
       responses:
         '200':
           description: Factory deleted
-        '404':
-          description: Factory not found
+        '401':
+          description: Invalid credentials
         '403':
           description: Access denied
-
+        '404':
+          description: Factory not found
   /factories/name/{name}:
     get:
       summary: Get a factory by name
@@ -267,18 +203,39 @@ paths:
           required: true
           schema:
             type: string
-          description: The name of the factory
+          description: The name of the factory to retrieve
       responses:
         '200':
-          description: A factory object
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Factory'
+          description: Factory data
         '404':
           description: Factory not found
-
   /factories/{id}/chocolates:
+    post:
+      summary: Create a new chocolate in a factory
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+          description: The ID of the factory
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Chocolate'
+      responses:
+        '201':
+          description: Chocolate created
+        '400':
+          description: Invalid input
+        '401':
+          description: Invalid credentials
+        '403':
+          description: Access denied
+        '404':
+          description: Factory not found
     get:
       summary: Get all chocolates in a factory
       parameters:
@@ -299,37 +256,6 @@ paths:
                   $ref: '#/components/schemas/Chocolate'
         '404':
           description: Factory not found
-    post:
-      summary: Create a new chocolate in a factory
-      parameters:
-        - in: path
-          name: id
-          required: true
-          schema:
-            type: integer
-          description: The ID of the factory
-        - in: header
-          name: username
-          required: true
-          schema:
-            type: string
-          description: The username of the user making the request
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/Chocolate'
-      responses:
-        '201':
-          description: Chocolate created
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Chocolate'
-        '403':
-          description: Access denied
-
   /factories/{id}/chocolates/{chocolateId}:
     get:
       summary: Get a chocolate by ID
@@ -345,14 +271,10 @@ paths:
           required: true
           schema:
             type: integer
-          description: The ID of the chocolate
+          description: The ID of the chocolate to retrieve
       responses:
         '200':
-          description: A chocolate object
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Chocolate'
+          description: Chocolate data
         '404':
           description: Chocolate not found
     put:
@@ -369,13 +291,7 @@ paths:
           required: true
           schema:
             type: integer
-          description: The ID of the chocolate
-        - in: header
-          name: username
-          required: true
-          schema:
-            type: string
-          description: The username of the user making the request
+          description: The ID of the chocolate to update
       requestBody:
         required: true
         content:
@@ -385,12 +301,16 @@ paths:
       responses:
         '200':
           description: Chocolate updated
-        '404':
-          description: Chocolate not found
+        '400':
+          description: Invalid input
+        '401':
+          description: Invalid credentials
         '403':
           description: Access denied
+        '404':
+          description: Chocolate not found
     delete:
-      summary: Logically delete a chocolate by ID
+      summary: Delete a chocolate by ID
       parameters:
         - in: path
           name: id
@@ -403,21 +323,16 @@ paths:
           required: true
           schema:
             type: integer
-          description: The ID of the chocolate
-        - in: header
-          name: username
-          required: true
-          schema:
-            type: string
-          description: The username of the user making the request
+          description: The ID of the chocolate to delete
       responses:
         '200':
           description: Chocolate deleted
-        '404':
-          description: Chocolate not found
+        '401':
+          description: Invalid credentials
         '403':
           description: Access denied
-
+        '404':
+          description: Chocolate not found
   /factories/{id}/chocolates/name/{chocolateName}:
     get:
       summary: Get a chocolate by name
@@ -433,18 +348,39 @@ paths:
           required: true
           schema:
             type: string
-          description: The name of the chocolate
+          description: The name of the chocolate to retrieve
       responses:
         '200':
-          description: A chocolate object
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Chocolate'
+          description: Chocolate data
         '404':
           description: Chocolate not found
-
   /factories/{id}/purchases:
+    post:
+      summary: Create a new purchase in a factory
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+          description: The ID of the factory
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Purchase'
+      responses:
+        '201':
+          description: Purchase created
+        '400':
+          description: Invalid input
+        '401':
+          description: Invalid credentials
+        '403':
+          description: Access denied
+        '404':
+          description: Factory not found
     get:
       summary: Get all purchases in a factory
       parameters:
@@ -465,37 +401,6 @@ paths:
                   $ref: '#/components/schemas/Purchase'
         '404':
           description: Factory not found
-    post:
-      summary: Create a new purchase in a factory
-      parameters:
-        - in: path
-          name: id
-          required: true
-          schema:
-            type: integer
-          description: The ID of the factory
-        - in: header
-          name: username
-          required: true
-          schema:
-            type: string
-          description: The username of the user making the request
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/Purchase'
-      responses:
-        '201':
-          description: Purchase created
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Purchase'
-        '403':
-          description: Access denied
-
   /factories/{id}/purchases/{purchaseId}:
     get:
       summary: Get a purchase by ID
@@ -511,14 +416,10 @@ paths:
           required: true
           schema:
             type: integer
-          description: The ID of the purchase
+          description: The ID of the purchase to retrieve
       responses:
         '200':
-          description: A purchase object
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Purchase'
+          description: Purchase data
         '404':
           description: Purchase not found
     put:
@@ -535,13 +436,7 @@ paths:
           required: true
           schema:
             type: integer
-          description: The ID of the purchase
-        - in: header
-          name: username
-          required: true
-          schema:
-            type: string
-          description: The username of the user making the request
+          description: The ID of the purchase to update
       requestBody:
         required: true
         content:
@@ -551,12 +446,16 @@ paths:
       responses:
         '200':
           description: Purchase updated
-        '404':
-          description: Purchase not found
+        '400':
+          description: Invalid input
+        '401':
+          description: Invalid credentials
         '403':
           description: Access denied
+        '404':
+          description: Purchase not found
     delete:
-      summary: Logically delete a purchase by ID
+      summary: Delete a purchase by ID
       parameters:
         - in: path
           name: id
@@ -569,22 +468,41 @@ paths:
           required: true
           schema:
             type: integer
-          description: The ID of the purchase
-        - in: header
-          name: username
-          required: true
-          schema:
-            type: string
-          description: The username of the user making the request
+          description: The ID of the purchase to delete
       responses:
         '200':
           description: Purchase deleted
-        '404':
-          description: Purchase not found
+        '401':
+          description: Invalid credentials
         '403':
           description: Access denied
-
+        '404':
+          description: Purchase not found
   /factories/{id}/comments:
+    post:
+      summary: Create a new comment in a factory
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+          description: The ID of the factory
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Comment'
+      responses:
+        '201':
+          description: Comment created
+        '400':
+          description: Invalid input
+        '401':
+          description: Invalid credentials
+        '404':
+          description: Factory not found
     get:
       summary: Get all comments in a factory
       parameters:
@@ -605,29 +523,6 @@ paths:
                   $ref: '#/components/schemas/Comment'
         '404':
           description: Factory not found
-    post:
-      summary: Create a new comment in a factory
-      parameters:
-        - in: path
-          name: id
-          required: true
-          schema:
-            type: integer
-          description: The ID of the factory
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/Comment'
-      responses:
-        '201':
-          description: Comment created
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Comment'
-
   /factories/{id}/comments/{commentId}:
     get:
       summary: Get a comment by ID
@@ -643,14 +538,10 @@ paths:
           required: true
           schema:
             type: integer
-          description: The ID of the comment
+          description: The ID of the comment to retrieve
       responses:
         '200':
-          description: A comment object
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Comment'
+          description: Comment data
         '404':
           description: Comment not found
     put:
@@ -667,13 +558,7 @@ paths:
           required: true
           schema:
             type: integer
-          description: The ID of the comment
-        - in: header
-          name: username
-          required: true
-          schema:
-            type: string
-          description: The username of the user making the request
+          description: The ID of the comment to update
       requestBody:
         required: true
         content:
@@ -683,12 +568,16 @@ paths:
       responses:
         '200':
           description: Comment updated
-        '404':
-          description: Comment not found
+        '400':
+          description: Invalid input
+        '401':
+          description: Invalid credentials
         '403':
           description: Access denied
+        '404':
+          description: Comment not found
     delete:
-      summary: Logically delete a comment by ID
+      summary: Delete a comment by ID
       parameters:
         - in: path
           name: id
@@ -701,25 +590,79 @@ paths:
           required: true
           schema:
             type: integer
-          description: The ID of the comment
+          description: The ID of the comment to delete
+      responses:
+        '200':
+          description: Comment deleted
+        '401':
+          description: Invalid credentials
+        '403':
+          description: Access denied
+        '404':
+          description: Comment not found
+  /cart:
+    post:
+      summary: Add chocolate to cart
+      parameters:
         - in: header
           name: username
           required: true
           schema:
             type: string
           description: The username of the user making the request
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CartItem'
+      responses:
+        '201':
+          description: Chocolate added to cart
+        '400':
+          description: Invalid input
+        '401':
+          description: Invalid credentials
+        '404':
+          description: Factory or chocolate not found
+  /cart/{username}:
+    get:
+      summary: Get cart by username
+      parameters:
+        - in: path
+          name: username
+          required: true
+          schema:
+            type: string
+          description: The username of the user
       responses:
         '200':
-          description: Comment deleted
-        '404':
-          description: Comment not found
+          description: Cart data
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/CartItemDetail'
+        '401':
+          description: Invalid credentials
         '403':
           description: Access denied
+        '404':
+          description: User or cart not found
 
 components:
   schemas:
     User:
       type: object
+      required:
+        - username
+        - password
+        - firstName
+        - lastName
+        - gender
+        - birthDate
+        - role
       properties:
         username:
           type: string
@@ -735,41 +678,63 @@ components:
           type: string
         role:
           type: string
-          enum: [Customer, Worker, Manager]
+        factoryId:
+          type: integer
+          nullable: true
         deleted:
           type: boolean
         loggedIn:
           type: boolean
-
+        cartId:
+          type: integer
+          nullable: true
+        purchaseIds:
+          type: array
+          items:
+            type: integer
+        points:
+          type: integer
+        customerTypeId:
+          type: integer
+          nullable: true
     Login:
       type: object
+      required:
+        - username
+        - password
       properties:
         username:
           type: string
         password:
           type: string
-
     Factory:
       type: object
+      required:
+        - name
+        - location
+        - workingHours
+        - logo
+        - managerId
       properties:
         id:
           type: integer
         name:
           type: string
         location:
-          $ref: '#/components/schemas/Location'
+          type: object
+          properties:
+            address:
+              type: string
         workingHours:
           type: string
         status:
           type: string
         logo:
           type: string
-        managerUsername:
-          type: string
+        managerId:
+          type: integer
         rating:
-          type: number
-          minimum: 1
-          maximum: 5
+          type: integer
         comments:
           type: array
           items:
@@ -784,20 +749,16 @@ components:
             $ref: '#/components/schemas/Purchase'
         deleted:
           type: boolean
-
-    Location:
-      type: object
-      properties:
-        longitude:
-          type: number
-        latitude:
-          type: number
-        address:
-          type: string
-          pattern: '^[^,]+,\s*[^,]+,\s*\d+$'
-
     Chocolate:
       type: object
+      required:
+        - name
+        - price
+        - type
+        - kind
+        - weight
+        - description
+        - image
       properties:
         id:
           type: integer
@@ -810,7 +771,7 @@ components:
         kind:
           type: string
         weight:
-          type: number
+          type: string
         description:
           type: string
         image:
@@ -818,20 +779,29 @@ components:
         status:
           type: string
         quantity:
-          type: number
-          default: 0
+          type: integer
         deleted:
           type: boolean
-
     Purchase:
       type: object
+      required:
+        - chocolates
+        - date
+        - totalPrice
+        - username
+        - status
       properties:
         id:
           type: integer
         chocolates:
           type: array
           items:
-            $ref: '#/components/schemas/Chocolate'
+            type: object
+            properties:
+              chocolateId:
+                type: integer
+              quantity:
+                type: integer
         date:
           type: string
         totalPrice:
@@ -842,9 +812,11 @@ components:
           type: string
         deleted:
           type: boolean
-
     Comment:
       type: object
+      required:
+        - username
+        - text
       properties:
         id:
           type: integer
@@ -853,11 +825,37 @@ components:
         text:
           type: string
         rating:
-          type: number
-          minimum: 1
-          maximum: 5
+          type: integer
+          nullable: true
         approved:
           type: boolean
-          default: false
         deleted:
           type: boolean
+    CartItem:
+      type: object
+      required:
+        - chocolateId
+        - factoryId
+        - quantity
+      properties:
+        chocolateId:
+          type: integer
+        factoryId:
+          type: integer
+        quantity:
+          type: integer
+    CartItemDetail:
+      type: object
+      properties:
+        chocolateId:
+          type: integer
+        factoryId:
+          type: integer
+        quantity:
+          type: integer
+        factoryName:
+          type: string
+        chocolate:
+          $ref: '#/components/schemas/Chocolate'
+        totalPrice:
+          type: number

@@ -26,6 +26,11 @@ const getNextId = (items) => {
   return maxId + 1;
 };
 
+const isValidAddress = (address) => {
+  const regex = /^[^,]+,\s[^,]+,\s\d{5}$/;
+  return regex.test(address);
+};
+
 // User routes
 const users = JSON.parse(fs.readFileSync("./data/users.json", "utf-8"));
 
@@ -78,8 +83,8 @@ app.delete("/users/:username", (req, res) => {
 // Factories routes
 app.post("/factories", (req, res) => {
   const { name, location, workingHours, status, logo, managerUsername } = req.body;
-  if (rating < 1 || rating > 5) {
-    return res.status(400).send('Rating must be between 1 and 5');
+  if (!isValidAddress(location.address)) {
+    return res.status(400).send('Invalid address format. Expected format: [street and number], [city], [postal code]');
   }
   const newFactory = {
     id: getNextId(data),
@@ -127,8 +132,11 @@ app.put("/factories/:id", (req, res) => {
     return res.status(404).send("Factory not found");
   }
   const { name, location, workingHours, status, logo, managerUsername, rating } = req.body;
-  if (rating < 1 || rating > 5) {
+  if (rating && (rating < 1 || rating > 5)) {
     return res.status(400).send('Rating must be between 1 and 5');
+  }
+  if (location && !isValidAddress(location.address)) {
+    return res.status(400).send('Invalid address format. Expected format: [street and number], [city], [postal code]');
   }
   if (name) factory.name = name;
   if (location) factory.location = location;
@@ -378,7 +386,7 @@ app.put("/factories/:id/comments/:commentId", (req, res) => {
     return res.status(404).send("Comment not found");
   }
   const { text, rating, approved } = req.body;
-  if (rating < 1 || rating > 5) {
+  if (rating && (rating < 1 || rating > 5)) {
     return res.status(400).send('Rating must be between 1 and 5');
   }
   if (text) comment.text = text;

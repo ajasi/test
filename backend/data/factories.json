@@ -223,7 +223,24 @@
     "logo": "https://bcassetcdn.com/public/blog/wp-content/uploads/2021/10/18191514/ritter-sport.png",
     "managerUsername": "manager2",
     "rating": "5",
-    "comments": [],
+    "comments": [
+      {
+        "id": 1,
+        "username": "mimi",
+        "text": "tadtas",
+        "rating": 1,
+        "approved": false,
+        "deleted": false
+      },
+      {
+        "id": 2,
+        "username": "mimi",
+        "text": "tadtas",
+        "rating": 5,
+        "approved": true,
+        "deleted": false
+      }
+    ],
     "chocolates": [],
     "purchases": [],
     "deleted": false
@@ -241,6 +258,24 @@
     "logo": "https://bcassetcdn.com/public/blog/wp-content/uploads/2021/10/18191535/Teuscher.png",
     "managerUsername": "manager2",
     "rating": "5",
+    "comments": [],
+    "chocolates": [],
+    "purchases": [],
+    "deleted": false
+  },
+  {
+    "id": 7,
+    "name": "Teuscher 8",
+    "location": {
+      "longitude": 19.833549,
+      "latitude": 45.267136,
+      "address": "Dr Ivana Ribara bb, Novi Sad, 21000"
+    },
+    "workingHours": "9am - 5pm",
+    "status": "Open",
+    "logo": "https://bcassetcdn.com/public/blog/wp-content/uploads/2021/10/18191535/Teuscher.png",
+    "managerUsername": "manager2",
+    "rating": 0,
     "comments": [],
     "chocolates": [],
     "purchases": [],

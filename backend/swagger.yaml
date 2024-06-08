@@ -644,8 +644,7 @@ components:
           type: number
         address:
           type: string
-        deleted:
-          type: boolean
+          pattern: '^[^,]+,\s[^,]+,\s\d{5}$'
 
     Chocolate:
       type: object

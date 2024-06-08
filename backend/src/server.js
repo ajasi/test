@@ -15,10 +15,11 @@ app.get("/", (req, res) => {
 
 // Load data
 const data = JSON.parse(fs.readFileSync("./data/factories.json", "utf-8"));
+const users = JSON.parse(fs.readFileSync("./data/users.json", "utf-8"));
 
 // Helper functions
-const saveData = (data) => {
-  fs.writeFileSync("./data/factories.json", JSON.stringify(data, null, 2));
+const saveData = (data, filePath) => {
+  fs.writeFileSync(filePath, JSON.stringify(data, null, 2));
 };
 
 const getNextId = (items) => {
@@ -27,21 +28,60 @@ const getNextId = (items) => {
 };
 
 const isValidAddress = (address) => {
-  const regex = /^[^,]+,\s[^,]+,\s\d{5}$/;
+  const regex = /^[^,]+,\s*[^,]+,\s*\d+$/;
   return regex.test(address);
 };
 
-// User routes
-const users = JSON.parse(fs.readFileSync("./data/users.json", "utf-8"));
+// Middleware for checking user roles
+const checkRole = (allowedRoles) => {
+  return (req, res, next) => {
+    const username = req.headers['username'];
+    const user = users.find(u => u.username === username && !u.deleted);
 
+    if (!user || !user.loggedIn) {
+      return res.status(401).send("User not logged in");
+    }
+
+    if (!allowedRoles.includes(user.role)) {
+      return res.status(403).send("Access denied");
+    }
+    next();
+  };
+};
+
+// User routes
 app.post("/register", (req, res) => {
-  const { username, password, firstName, lastName, gender, birthDate } = req.body;
+  const { username, password, firstName, lastName, gender, birthDate, role } = req.body;
+  const allowedRoles = ['Customer', 'Worker', 'Manager'];
+  
+  if (!allowedRoles.includes(role)) {
+    return res.status(400).send('Invalid role');
+  }
+
+  const creatingUsername = req.headers['username'];
+  if (creatingUsername) {
+    const creatingUser = users.find(user => user.username === creatingUsername && !user.deleted);
+    
+    if (!creatingUser || !creatingUser.loggedIn) {
+      return res.status(401).send('Invalid credentials');
+    }
+
+    if (role === 'Manager' && creatingUser.role !== 'Administrator') {
+      return res.status(403).send('Only Administrator can create a Manager');
+    }
+
+    if (role === 'Worker' && creatingUser.role !== 'Manager') {
+      return res.status(403).send('Only Manager can create a Worker');
+    }
+  }
+
   if (users.find(user => user.username === username)) {
     return res.status(400).send('Username already exists');
   }
-  const newUser = { username, password, firstName, lastName, gender, birthDate, role: 'Kupac', deleted: false };
+
+  const newUser = { username, password, firstName, lastName, gender, birthDate, role, deleted: false, loggedIn: false };
   users.push(newUser);
-  fs.writeFileSync('./data/users.json', JSON.stringify(users, null, 2));
+  saveData(users, './data/users.json');
   res.status(201).send(newUser);
 });
 
@@ -51,37 +91,56 @@ app.post("/login", (req, res) => {
   if (!user) {
     return res.status(401).send('Invalid credentials');
   }
+  user.loggedIn = true;
+  saveData(users, './data/users.json');
   res.send(user);
 });
 
-app.put("/users/:username", (req, res) => {
+app.post("/logout", (req, res) => {
+  const username = req.headers['username'];
+  const user = users.find(user => user.username === username && user.loggedIn && !user.deleted);
+  if (!user) {
+    return res.status(401).send('User not logged in');
+  }
+  user.loggedIn = false;
+  saveData(users, './data/users.json');
+  res.send('User logged out');
+});
+
+app.put("/users/:username", checkRole(['Administrator']), (req, res) => {
   const user = users.find(u => u.username === req.params.username && !u.deleted);
   if (!user) {
     return res.status(404).send('User not found');
   }
-  const { password, firstName, lastName, gender, birthDate } = req.body;
+  const { password, firstName, lastName, gender, birthDate, role } = req.body;
+
+  if (role && user.role === 'Customer' && role === 'Manager') {
+    return res.status(403).send('Customer cannot change role to Manager');
+  }
+
   if (password) user.password = password;
   if (firstName) user.firstName = firstName;
   if (lastName) user.lastName = lastName;
   if (gender) user.gender = gender;
   if (birthDate) user.birthDate = birthDate;
+  if (role) user.role = role;
 
-  fs.writeFileSync('./data/users.json', JSON.stringify(users, null, 2));
+  saveData(users, './data/users.json');
   res.send('User updated');
 });
 
-app.delete("/users/:username", (req, res) => {
+app.delete("/users/:username", checkRole(['Administrator']), (req, res) => {
   const user = users.find(u => u.username === req.params.username);
   if (!user) {
     return res.status(404).send('User not found');
   }
   user.deleted = true;
-  fs.writeFileSync('./data/users.json', JSON.stringify(users, null, 2));
+  saveData(users, './data/users.json');
   res.send('User deleted');
 });
 
 // Factories routes
-app.post("/factories", (req, res) => {
+app.post("/factories", checkRole(['Administrator']), (req, res) => {
   const { name, location, workingHours, status, logo, managerUsername } = req.body;
   if (!isValidAddress(location.address)) {
     return res.status(400).send('Invalid address format. Expected format: [street and number], [city], [postal code]');
@@ -101,7 +160,7 @@ app.post("/factories", (req, res) => {
     deleted: false,
   };
   data.push(newFactory);
-  saveData(data);
+  saveData(data, './data/factories.json');
   res.status(201).send(newFactory);
 });
 
@@ -126,7 +185,7 @@ app.get("/factories/name/:name", (req, res) => {
   res.send(factory);
 });
 
-app.put("/factories/:id", (req, res) => {
+app.put("/factories/:id", checkRole(['Administrator', 'Manager']), (req, res) => {
   const factory = data.find((f) => f.id === parseInt(req.params.id) && !f.deleted);
   if (!factory) {
     return res.status(404).send("Factory not found");
@@ -146,22 +205,22 @@ app.put("/factories/:id", (req, res) => {
   if (managerUsername) factory.managerUsername = managerUsername;
   if (rating) factory.rating = rating;
 
-  saveData(data);
+  saveData(data, './data/factories.json');
   res.send("Factory updated");
 });
 
-app.delete("/factories/:id", (req, res) => {
+app.delete("/factories/:id", checkRole(['Administrator']), (req, res) => {
   const factory = data.find((f) => f.id === parseInt(req.params.id));
   if (!factory) {
     return res.status(404).send("Factory not found");
   }
   factory.deleted = true;
-  saveData(data);
+  saveData(data, './data/factories.json');
   res.send("Factory deleted");
 });
 
 // Chocolates routes
-app.post("/factories/:id/chocolates", (req, res) => {
+app.post("/factories/:id/chocolates", checkRole(['Administrator', 'Manager']), (req, res) => {
   const factory = data.find((f) => f.id === parseInt(req.params.id) && !f.deleted);
   if (!factory) {
     return res.status(404).send("Factory not found");
@@ -181,7 +240,7 @@ app.post("/factories/:id/chocolates", (req, res) => {
     deleted: false,
   };
   factory.chocolates.push(newChocolate);
-  saveData(data);
+  saveData(data, './data/factories.json');
   res.status(201).send(newChocolate);
 });
 
@@ -218,7 +277,7 @@ app.get("/factories/:id/chocolates/name/:chocolateName", (req, res) => {
   res.send(chocolate);
 });
 
-app.put("/factories/:id/chocolates/:chocolateId", (req, res) => {
+app.put("/factories/:id/chocolates/:chocolateId", checkRole(['Administrator', 'Manager']), (req, res) => {
   const factory = data.find((f) => f.id === parseInt(req.params.id) && !f.deleted);
   if (!factory) {
     return res.status(404).send("Factory not found");
@@ -238,11 +297,11 @@ app.put("/factories/:id/chocolates/:chocolateId", (req, res) => {
   if (quantity !== null) chocolate.quantity = quantity;
   chocolate.status = quantity > 0 ? "In stock" : "Out of stock";
 
-  saveData(data);
+  saveData(data, './data/factories.json');
   res.send("Chocolate updated");
 });
 
-app.delete("/factories/:id/chocolates/:chocolateId", (req, res) => {
+app.delete("/factories/:id/chocolates/:chocolateId", checkRole(['Administrator', 'Manager']), (req, res) => {
   const factory = data.find((f) => f.id === parseInt(req.params.id));
   if (!factory) {
     return res.status(404).send("Factory not found");
@@ -252,12 +311,12 @@ app.delete("/factories/:id/chocolates/:chocolateId", (req, res) => {
     return res.status(404).send("Chocolate not found");
   }
   chocolate.deleted = true;
-  saveData(data);
+  saveData(data, './data/factories.json');
   res.send("Chocolate deleted");
 });
 
 // Purchases routes
-app.post("/factories/:id/purchases", (req, res) => {
+app.post("/factories/:id/purchases", checkRole(['Customer']), (req, res) => {
   const factory = data.find((f) => f.id === parseInt(req.params.id) && !f.deleted);
   if (!factory) {
     return res.status(404).send("Factory not found");
@@ -273,11 +332,11 @@ app.post("/factories/:id/purchases", (req, res) => {
     deleted: false,
   };
   factory.purchases.push(newPurchase);
-  saveData(data);
+  saveData(data, './data/factories.json');
   res.status(201).send(newPurchase);
 });
 
-app.get("/factories/:id/purchases", (req, res) => {
+app.get("/factories/:id/purchases", checkRole(['Administrator', 'Manager', 'Worker']), (req, res) => {
   const factory = data.find((f) => f.id === parseInt(req.params.id) && !f.deleted);
   if (!factory) {
     return res.status(404).send("Factory not found");
@@ -286,7 +345,7 @@ app.get("/factories/:id/purchases", (req, res) => {
   res.send(activePurchases);
 });
 
-app.get("/factories/:id/purchases/:purchaseId", (req, res) => {
+app.get("/factories/:id/purchases/:purchaseId", checkRole(['Administrator', 'Manager', 'Worker']), (req, res) => {
   const factory = data.find((f) => f.id === parseInt(req.params.id) && !f.deleted);
   if (!factory) {
     return res.status(404).send("Factory not found");
@@ -298,7 +357,7 @@ app.get("/factories/:id/purchases/:purchaseId", (req, res) => {
   res.send(purchase);
 });
 
-app.put("/factories/:id/purchases/:purchaseId", (req, res) => {
+app.put("/factories/:id/purchases/:purchaseId", checkRole(['Administrator', 'Manager', 'Worker']), (req, res) => {
   const factory = data.find((f) => f.id === parseInt(req.params.id) && !f.deleted);
   if (!factory) {
     return res.status(404).send("Factory not found");
@@ -314,11 +373,11 @@ app.put("/factories/:id/purchases/:purchaseId", (req, res) => {
   if (username) purchase.username = username;
   if (status) purchase.status = status;
 
-  saveData(data);
+  saveData(data, './data/factories.json');
   res.send("Purchase updated");
 });
 
-app.delete("/factories/:id/purchases/:purchaseId", (req, res) => {
+app.delete("/factories/:id/purchases/:purchaseId", checkRole(['Administrator', 'Manager', 'Worker']), (req, res) => {
   const factory = data.find((f) => f.id === parseInt(req.params.id));
   if (!factory) {
     return res.status(404).send("Factory not found");
@@ -328,7 +387,7 @@ app.delete("/factories/:id/purchases/:purchaseId", (req, res) => {
     return res.status(404).send("Purchase not found");
   }
   purchase.deleted = true;
-  saveData(data);
+  saveData(data, './data/factories.json');
   res.send("Purchase deleted");
 });
 
@@ -351,7 +410,7 @@ app.post("/factories/:id/comments", (req, res) => {
     deleted: false,
   };
   factory.comments.push(newComment);
-  saveData(data);
+  saveData(data, './data/factories.json');
   res.status(201).send(newComment);
 });
 
@@ -376,7 +435,7 @@ app.get("/factories/:id/comments/:commentId", (req, res) => {
   res.send(comment);
 });
 
-app.put("/factories/:id/comments/:commentId", (req, res) => {
+app.put("/factories/:id/comments/:commentId", checkRole(['Administrator', 'Manager']), (req, res) => {
   const factory = data.find((f) => f.id === parseInt(req.params.id) && !f.deleted);
   if (!factory) {
     return res.status(404).send("Factory not found");
@@ -393,11 +452,11 @@ app.put("/factories/:id/comments/:commentId", (req, res) => {
   if (rating) comment.rating = rating;
   if (approved !== undefined) comment.approved = approved;
 
-  saveData(data);
+  saveData(data, './data/factories.json');
   res.send("Comment updated");
 });
 
-app.delete("/factories/:id/comments/:commentId", (req, res) => {
+app.delete("/factories/:id/comments/:commentId", checkRole(['Administrator', 'Manager']), (req, res) => {
   const factory = data.find((f) => f.id === parseInt(req.params.id));
   if (!factory) {
     return res.status(404).send("Factory not found");
@@ -407,7 +466,7 @@ app.delete("/factories/:id/comments/:commentId", (req, res) => {
     return res.status(404).send("Comment not found");
   }
   comment.deleted = true;
-  saveData(data);
+  saveData(data, './data/factories.json');
   res.send("Comment deleted");
 });
 

@@ -1,1 +1,24 @@
-[]
+[
+  {
+    "username": "admin",
+    "password": "qq",
+    "firstName": "Milica",
+    "lastName": "Vujkov",
+    "gender": "female",
+    "birthDate": "1.1.1900.",
+    "role": "Administrator",
+    "deleted": false,
+    "loggedIn": false
+  },
+  {
+    "username": "stringsa",
+    "password": "string",
+    "firstName": "string",
+    "lastName": "string",
+    "gender": "string",
+    "birthDate": "string",
+    "role": "Manager",
+    "deleted": false,
+    "loggedIn": false
+  }
+]

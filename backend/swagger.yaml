@@ -22,12 +22,34 @@ paths:
   /register:
     post:
       summary: Register a new user
+      parameters:
+        - in: header
+          name: username
+          schema:
+            type: string
+          description: The username of the user making the request (optional)
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/User'
+              type: object
+              properties:
+                username:
+                  type: string
+                password:
+                  type: string
+                firstName:
+                  type: string
+                lastName:
+                  type: string
+                gender:
+                  type: string
+                birthDate:
+                  type: string
+                role:
+                  type: string
+                  enum: [Customer, Worker, Manager]
       responses:
         '201':
           description: User registered
@@ -36,7 +58,11 @@ paths:
               schema:
                 $ref: '#/components/schemas/User'
         '400':
-          description: Username already exists
+          description: Invalid role or username already exists
+        '401':
+          description: Invalid credentials
+        '403':
+          description: Access denied
 
   /login:
     post:
@@ -57,6 +83,22 @@ paths:
         '401':
           description: Invalid credentials
 
+  /logout:
+    post:
+      summary: User logout
+      parameters:
+        - in: header
+          name: username
+          required: true
+          schema:
+            type: string
+          description: The username of the user making the request
+      responses:
+        '200':
+          description: User logged out
+        '401':
+          description: User not logged in
+
   /users/{username}:
     put:
       summary: Update user information
@@ -67,6 +109,12 @@ paths:
           schema:
             type: string
           description: The username of the user to update
+        - in: header
+          name: username
+          required: true
+          schema:
+            type: string
+          description: The username of the user making the request
       requestBody:
         required: true
         content:
@@ -78,6 +126,8 @@ paths:
           description: User updated
         '404':
           description: User not found
+        '403':
+          description: Access denied
     delete:
       summary: Logically delete a user
       parameters:
@@ -87,11 +137,19 @@ paths:
           schema:
             type: string
           description: The username of the user to delete
+        - in: header
+          name: username
+          required: true
+          schema:
+            type: string
+          description: The username of the user making the request
       responses:
         '200':
           description: User deleted
         '404':
           description: User not found
+        '403':
+          description: Access denied
 
   /factories:
     get:
@@ -107,6 +165,13 @@ paths:
                   $ref: '#/components/schemas/Factory'
     post:
       summary: Create a new factory
+      parameters:
+        - in: header
+          name: username
+          required: true
+          schema:
+            type: string
+          description: The username of the user making the request
       requestBody:
         required: true
         content:
@@ -120,6 +185,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Factory'
+        '403':
+          description: Access denied
 
   /factories/{id}:
     get:
@@ -149,6 +216,12 @@ paths:
           schema:
             type: integer
           description: The ID of the factory
+        - in: header
+          name: username
+          required: true
+          schema:
+            type: string
+          description: The username of the user making the request
       requestBody:
         required: true
         content:
@@ -160,6 +233,8 @@ paths:
           description: Factory updated
         '404':
           description: Factory not found
+        '403':
+          description: Access denied
     delete:
       summary: Logically delete a factory by ID
       parameters:
@@ -169,11 +244,19 @@ paths:
           schema:
             type: integer
           description: The ID of the factory
+        - in: header
+          name: username
+          required: true
+          schema:
+            type: string
+          description: The username of the user making the request
       responses:
         '200':
           description: Factory deleted
         '404':
           description: Factory not found
+        '403':
+          description: Access denied
 
   /factories/name/{name}:
     get:
@@ -225,6 +308,12 @@ paths:
           schema:
             type: integer
           description: The ID of the factory
+        - in: header
+          name: username
+          required: true
+          schema:
+            type: string
+          description: The username of the user making the request
       requestBody:
         required: true
         content:
@@ -238,6 +327,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Chocolate'
+        '403':
+          description: Access denied
 
   /factories/{id}/chocolates/{chocolateId}:
     get:
@@ -279,6 +370,12 @@ paths:
           schema:
             type: integer
           description: The ID of the chocolate
+        - in: header
+          name: username
+          required: true
+          schema:
+            type: string
+          description: The username of the user making the request
       requestBody:
         required: true
         content:
@@ -290,6 +387,8 @@ paths:
           description: Chocolate updated
         '404':
           description: Chocolate not found
+        '403':
+          description: Access denied
     delete:
       summary: Logically delete a chocolate by ID
       parameters:
@@ -305,11 +404,19 @@ paths:
           schema:
             type: integer
           description: The ID of the chocolate
+        - in: header
+          name: username
+          required: true
+          schema:
+            type: string
+          description: The username of the user making the request
       responses:
         '200':
           description: Chocolate deleted
         '404':
           description: Chocolate not found
+        '403':
+          description: Access denied
 
   /factories/{id}/chocolates/name/{chocolateName}:
     get:
@@ -367,6 +474,12 @@ paths:
           schema:
             type: integer
           description: The ID of the factory
+        - in: header
+          name: username
+          required: true
+          schema:
+            type: string
+          description: The username of the user making the request
       requestBody:
         required: true
         content:
@@ -380,6 +493,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Purchase'
+        '403':
+          description: Access denied
 
   /factories/{id}/purchases/{purchaseId}:
     get:
@@ -421,6 +536,12 @@ paths:
           schema:
             type: integer
           description: The ID of the purchase
+        - in: header
+          name: username
+          required: true
+          schema:
+            type: string
+          description: The username of the user making the request
       requestBody:
         required: true
         content:
@@ -432,6 +553,8 @@ paths:
           description: Purchase updated
         '404':
           description: Purchase not found
+        '403':
+          description: Access denied
     delete:
       summary: Logically delete a purchase by ID
       parameters:
@@ -447,11 +570,19 @@ paths:
           schema:
             type: integer
           description: The ID of the purchase
+        - in: header
+          name: username
+          required: true
+          schema:
+            type: string
+          description: The username of the user making the request
       responses:
         '200':
           description: Purchase deleted
         '404':
           description: Purchase not found
+        '403':
+          description: Access denied
 
   /factories/{id}/comments:
     get:
@@ -537,6 +668,12 @@ paths:
           schema:
             type: integer
           description: The ID of the comment
+        - in: header
+          name: username
+          required: true
+          schema:
+            type: string
+          description: The username of the user making the request
       requestBody:
         required: true
         content:
@@ -548,6 +685,8 @@ paths:
           description: Comment updated
         '404':
           description: Comment not found
+        '403':
+          description: Access denied
     delete:
       summary: Logically delete a comment by ID
       parameters:
@@ -563,11 +702,19 @@ paths:
           schema:
             type: integer
           description: The ID of the comment
+        - in: header
+          name: username
+          required: true
+          schema:
+            type: string
+          description: The username of the user making the request
       responses:
         '200':
           description: Comment deleted
         '404':
           description: Comment not found
+        '403':
+          description: Access denied
 
 components:
   schemas:
@@ -588,7 +735,10 @@ components:
           type: string
         role:
           type: string
+          enum: [Customer, Worker, Manager]
         deleted:
+          type: boolean
+        loggedIn:
           type: boolean
 
     Login:
@@ -644,7 +794,7 @@ components:
           type: number
         address:
           type: string
-          pattern: '^[^,]+,\s[^,]+,\s\d{5}$'
+          pattern: '^[^,]+,\s*[^,]+,\s*\d+$'
 
     Chocolate:
       type: object

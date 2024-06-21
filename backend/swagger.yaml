@@ -61,9 +61,91 @@ paths:
           description: User logged out
         '401':
           description: User not logged in
-  /users/{username}:
+  /users/me:
+    get:
+      summary: Get logged-in user data
+      parameters:
+        - in: header
+          name: username
+          required: true
+          schema:
+            type: string
+          description: The username of the logged-in user
+      responses:
+        '200':
+          description: User data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '401':
+          description: User not logged in
     put:
-      summary: Update a user by username
+      summary: Update logged-in user data
+      parameters:
+        - in: header
+          name: username
+          required: true
+          schema:
+            type: string
+          description: The username of the logged-in user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/User'
+      responses:
+        '200':
+          description: User updated
+        '400':
+          description: Invalid input
+        '401':
+          description: User not logged in
+  /users:
+    get:
+      summary: Get all users (Admin only)
+      parameters:
+        - in: header
+          name: username
+          required: true
+          schema:
+            type: string
+          description: The username of the logged-in admin
+      responses:
+        '200':
+          description: A list of users
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/User'
+        '403':
+          description: Access denied
+  /users/{username}:
+    get:
+      summary: Get a user by username (Admin only)
+      parameters:
+        - in: path
+          name: username
+          required: true
+          schema:
+            type: string
+          description: The username of the user to retrieve
+      responses:
+        '200':
+          description: User data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '404':
+          description: User not found
+        '403':
+          description: Access denied
+    put:
+      summary: Update a user by username (Admin only)
       parameters:
         - in: path
           name: username
@@ -89,7 +171,7 @@ paths:
         '404':
           description: User not found
     delete:
-      summary: Delete a user by username
+      summary: Delete a user by username (Admin only)
       parameters:
         - in: path
           name: username
@@ -108,7 +190,14 @@ paths:
           description: User not found
   /factories:
     post:
-      summary: Create a new factory
+      summary: Create a new factory (Admin only)
+      parameters:
+        - in: header
+          name: username
+          required: true
+          schema:
+            type: string
+          description: The username of the logged-in admin
       requestBody:
         required: true
         content:
@@ -148,10 +237,14 @@ paths:
       responses:
         '200':
           description: Factory data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Factory'
         '404':
           description: Factory not found
     put:
-      summary: Update a factory by ID
+      summary: Update a factory by ID (Admin or Manager)
       parameters:
         - in: path
           name: id
@@ -159,6 +252,12 @@ paths:
           schema:
             type: integer
           description: The ID of the factory to update
+        - in: header
+          name: username
+          required: true
+          schema:
+            type: string
+          description: The username of the logged-in admin or manager
       requestBody:
         required: true
         content:
@@ -177,7 +276,7 @@ paths:
         '404':
           description: Factory not found
     delete:
-      summary: Delete a factory by ID
+      summary: Delete a factory by ID (Admin only)
       parameters:
         - in: path
           name: id
@@ -185,6 +284,12 @@ paths:
           schema:
             type: integer
           description: The ID of the factory to delete
+        - in: header
+          name: username
+          required: true
+          schema:
+            type: string
+          description: The username of the logged-in admin
       responses:
         '200':
           description: Factory deleted
@@ -207,11 +312,15 @@ paths:
       responses:
         '200':
           description: Factory data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Factory'
         '404':
           description: Factory not found
   /factories/{id}/chocolates:
     post:
-      summary: Create a new chocolate in a factory
+      summary: Create a new chocolate in a factory (Manager only)
       parameters:
         - in: path
           name: id
@@ -219,6 +328,12 @@ paths:
           schema:
             type: integer
           description: The ID of the factory
+        - in: header
+          name: username
+          required: true
+          schema:
+            type: string
+          description: The username of the logged-in manager
       requestBody:
         required: true
         content:
@@ -275,10 +390,14 @@ paths:
       responses:
         '200':
           description: Chocolate data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Chocolate'
         '404':
           description: Chocolate not found
     put:
-      summary: Update a chocolate by ID
+      summary: Update a chocolate by ID (Manager or Worker)
       parameters:
         - in: path
           name: id
@@ -292,6 +411,12 @@ paths:
           schema:
             type: integer
           description: The ID of the chocolate to update
+        - in: header
+          name: username
+          required: true
+          schema:
+            type: string
+          description: The username of the logged-in manager or worker
       requestBody:
         required: true
         content:
@@ -310,7 +435,7 @@ paths:
         '404':
           description: Chocolate not found
     delete:
-      summary: Delete a chocolate by ID
+      summary: Delete a chocolate by ID (Admin or Manager)
       parameters:
         - in: path
           name: id
@@ -324,6 +449,12 @@ paths:
           schema:
             type: integer
           description: The ID of the chocolate to delete
+        - in: header
+          name: username
+          required: true
+          schema:
+            type: string
+          description: The username of the logged-in admin or manager
       responses:
         '200':
           description: Chocolate deleted
@@ -335,7 +466,7 @@ paths:
           description: Chocolate not found
   /factories/{id}/purchases:
     post:
-      summary: Create a new purchase in a factory
+      summary: Create a new purchase in a factory (Customer only)
       parameters:
         - in: path
           name: id
@@ -343,12 +474,12 @@ paths:
           schema:
             type: integer
           description: The ID of the factory
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/Purchase'
+        - in: header
+          name: username
+          required: true
+          schema:
+            type: string
+          description: The username of the logged-in customer
       responses:
         '201':
           description: Purchase created
@@ -356,12 +487,10 @@ paths:
           description: Invalid input
         '401':
           description: Invalid credentials
-        '403':
-          description: Access denied
         '404':
           description: Factory not found
     get:
-      summary: Get all purchases in a factory
+      summary: Get all purchases in a factory (Admin or Manager)
       parameters:
         - in: path
           name: id
@@ -369,6 +498,12 @@ paths:
           schema:
             type: integer
           description: The ID of the factory
+        - in: header
+          name: username
+          required: true
+          schema:
+            type: string
+          description: The username of the logged-in admin or manager
       responses:
         '200':
           description: A list of purchases
@@ -382,7 +517,7 @@ paths:
           description: Factory not found
   /factories/{id}/purchases/{purchaseId}:
     get:
-      summary: Get a purchase by ID
+      summary: Get a purchase by ID (Admin or Manager)
       parameters:
         - in: path
           name: id
@@ -399,10 +534,14 @@ paths:
       responses:
         '200':
           description: Purchase data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Purchase'
         '404':
           description: Purchase not found
     put:
-      summary: Update a purchase by ID
+      summary: Update a purchase by ID (Admin, Manager, or Customer)
       parameters:
         - in: path
           name: id
@@ -416,6 +555,12 @@ paths:
           schema:
             type: integer
           description: The ID of the purchase to update
+        - in: header
+          name: username
+          required: true
+          schema:
+            type: string
+          description: The username of the logged-in user
       requestBody:
         required: true
         content:
@@ -434,7 +579,7 @@ paths:
         '404':
           description: Purchase not found
     delete:
-      summary: Delete a purchase by ID
+      summary: Delete a purchase by ID (Customer only)
       parameters:
         - in: path
           name: id
@@ -448,6 +593,12 @@ paths:
           schema:
             type: integer
           description: The ID of the purchase to delete
+        - in: header
+          name: username
+          required: true
+          schema:
+            type: string
+          description: The username of the logged-in customer
       responses:
         '200':
           description: Purchase deleted
@@ -459,7 +610,7 @@ paths:
           description: Purchase not found
   /factories/{id}/comments:
     post:
-      summary: Create a new comment in a factory
+      summary: Create a new comment in a factory (Customer only)
       parameters:
         - in: path
           name: id
@@ -467,6 +618,12 @@ paths:
           schema:
             type: integer
           description: The ID of the factory
+        - in: header
+          name: username
+          required: true
+          schema:
+            type: string
+          description: The username of the logged-in customer
       requestBody:
         required: true
         content:
@@ -480,6 +637,8 @@ paths:
           description: Invalid input
         '401':
           description: Invalid credentials
+        '403':
+          description: Access denied
         '404':
           description: Factory not found
     get:
@@ -491,6 +650,12 @@ paths:
           schema:
             type: integer
           description: The ID of the factory
+        - in: header
+          name: username
+          required: true
+          schema:
+            type: string
+          description: The username of the logged-in user
       responses:
         '200':
           description: A list of comments
@@ -500,6 +665,10 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/Comment'
+        '401':
+          description: Invalid credentials
+        '403':
+          description: Access denied
         '404':
           description: Factory not found
   /factories/{id}/comments/{commentId}:
@@ -521,10 +690,14 @@ paths:
       responses:
         '200':
           description: Comment data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Comment'
         '404':
           description: Comment not found
     put:
-      summary: Update a comment by ID
+      summary: Update a comment by ID (Manager only)
       parameters:
         - in: path
           name: id
@@ -538,6 +711,12 @@ paths:
           schema:
             type: integer
           description: The ID of the comment to update
+        - in: header
+          name: username
+          required: true
+          schema:
+            type: string
+          description: The username of the logged-in manager
       requestBody:
         required: true
         content:
@@ -556,7 +735,7 @@ paths:
         '404':
           description: Comment not found
     delete:
-      summary: Delete a comment by ID
+      summary: Delete a comment by ID (Admin or Manager)
       parameters:
         - in: path
           name: id
@@ -570,6 +749,12 @@ paths:
           schema:
             type: integer
           description: The ID of the comment to delete
+        - in: header
+          name: username
+          required: true
+          schema:
+            type: string
+          description: The username of the logged-in admin or manager
       responses:
         '200':
           description: Comment deleted
@@ -581,14 +766,14 @@ paths:
           description: Comment not found
   /cart:
     post:
-      summary: Add chocolate to cart
+      summary: Add item to cart (Customer only)
       parameters:
         - in: header
           name: username
           required: true
           schema:
             type: string
-          description: The username of the user making the request
+          description: The username of the logged-in customer
       requestBody:
         required: true
         content:
@@ -597,23 +782,31 @@ paths:
               $ref: '#/components/schemas/CartItem'
       responses:
         '201':
-          description: Chocolate added to cart
+          description: Item added to cart
         '400':
           description: Invalid input
         '401':
           description: Invalid credentials
+        '403':
+          description: Access denied
         '404':
-          description: Factory or chocolate not found
+          description: Factory or Chocolate not found
   /cart/{username}:
     get:
-      summary: Get cart by username
+      summary: Get cart by username (Customer only)
       parameters:
         - in: path
           name: username
           required: true
           schema:
             type: string
-          description: The username of the user
+          description: The username of the cart owner
+        - in: header
+          name: username
+          required: true
+          schema:
+            type: string
+          description: The username of the logged-in customer
       responses:
         '200':
           description: Cart data
@@ -628,16 +821,22 @@ paths:
         '403':
           description: Access denied
         '404':
-          description: User or cart not found
+          description: Cart not found
     put:
-      summary: Update cart item
+      summary: Update cart item quantity (Customer only)
       parameters:
         - in: path
           name: username
           required: true
           schema:
             type: string
-          description: The username of the user
+          description: The username of the cart owner
+        - in: header
+          name: username
+          required: true
+          schema:
+            type: string
+          description: The username of the logged-in customer
       requestBody:
         required: true
         content:
@@ -646,23 +845,25 @@ paths:
               $ref: '#/components/schemas/CartItem'
       responses:
         '200':
-          description: Cart item updated
+          description: Cart updated
         '400':
           description: Invalid input
         '401':
           description: Invalid credentials
+        '403':
+          description: Access denied
         '404':
-          description: User or cart not found
+          description: Cart or Item not found
   /cart/{username}/{factoryId}/{chocolateId}:
     delete:
-      summary: Delete cart item
+      summary: Remove item from cart (Customer only)
       parameters:
         - in: path
           name: username
           required: true
           schema:
             type: string
-          description: The username of the user
+          description: The username of the cart owner
         - in: path
           name: factoryId
           required: true
@@ -674,16 +875,22 @@ paths:
           required: true
           schema:
             type: integer
-          description: The ID of the chocolate
+          description: The ID of the chocolate to remove from cart
+        - in: header
+          name: username
+          required: true
+          schema:
+            type: string
+          description: The username of the logged-in customer
       responses:
         '200':
-          description: Cart item deleted
-        '400':
-          description: Invalid input
+          description: Item removed from cart
         '401':
           description: Invalid credentials
+        '403':
+          description: Access denied
         '404':
-          description: User or cart not found
+          description: Cart or Item not found
 
 components:
   schemas:
@@ -715,10 +922,6 @@ components:
         factoryId:
           type: integer
           nullable: true
-        deleted:
-          type: boolean
-        loggedIn:
-          type: boolean
         cartId:
           type: integer
           nullable: true
@@ -731,6 +934,10 @@ components:
         customerTypeId:
           type: integer
           nullable: true
+        deleted:
+          type: boolean
+        loggedIn:
+          type: boolean
     Login:
       type: object
       required:
@@ -755,10 +962,7 @@ components:
         name:
           type: string
         location:
-          type: object
-          properties:
-            address:
-              type: string
+          $ref: '#/components/schemas/Location'
         workingHours:
           type: object
           properties:
@@ -773,7 +977,8 @@ components:
         managerId:
           type: integer
         rating:
-          type: integer
+          type: number
+          nullable: true
         comments:
           type: array
           items:
@@ -788,6 +993,13 @@ components:
             $ref: '#/components/schemas/Purchase'
         deleted:
           type: boolean
+    Location:
+      type: object
+      required:
+        - address
+      properties:
+        address:
+          type: string
     Chocolate:
       type: object
       required:
@@ -870,7 +1082,7 @@ components:
           type: integer
           nullable: true
         approved:
-          type: boolean
+          type: string
         deleted:
           type: boolean
     CartItem:

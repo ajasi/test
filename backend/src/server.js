@@ -181,6 +181,45 @@ app.post("/logout", (req, res) => {
   res.send('User logged out');
 });
 
+app.get("/users/me", (req, res) => {
+  const username = req.headers['username'];
+  const user = users.find(u => u.username === username && !u.deleted);
+  if (!user) {
+    return res.status(401).send("User not logged in");
+  }
+  res.send(hidePassword(user));
+});
+
+app.put("/users/me", (req, res) => {
+  const username = req.headers['username'];
+  const user = users.find(u => u.username === username && !u.deleted);
+  if (!user) {
+    return res.status(401).send("User not logged in");
+  }
+  const { password, firstName, lastName, gender, birthDate } = req.body;
+
+  if (password) user.password = password;
+  if (firstName) user.firstName = firstName;
+  if (lastName) user.lastName = lastName;
+  if (gender) user.gender = gender;
+  if (birthDate) user.birthDate = birthDate;
+
+  saveData(users, './data/users.json');
+  res.send("User updated");
+});
+
+app.get("/users", checkRole(['Administrator']), (req, res) => {
+  res.send(users.map(hidePassword));
+});
+
+app.get("/users/:username", checkRole(['Administrator']), (req, res) => {
+  const user = users.find(u => u.username === req.params.username && !u.deleted);
+  if (!user) {
+    return res.status(404).send('User not found');
+  }
+  res.send(hidePassword(user));
+});
+
 app.put("/users/:username", checkRole(['Administrator']), (req, res) => {
   const user = users.find(u => u.username === req.params.username && !u.deleted);
   if (!user) {
@@ -483,7 +522,7 @@ app.post("/factories/:id/purchases", checkRole(['Customer']), (req, res) => {
   res.status(201).send(newPurchase);
 });
 
-app.get("/factories/:id/purchases", checkRole(['Administrator', 'Manager', 'Worker']), (req, res) => {
+app.get("/factories/:id/purchases", checkRole(['Administrator', 'Manager']), (req, res) => {
   const factory = data.find((f) => f.id === parseInt(req.params.id) && !f.deleted);
   if (!factory) {
     return res.status(404).send("Factory not found");
@@ -492,7 +531,7 @@ app.get("/factories/:id/purchases", checkRole(['Administrator', 'Manager', 'Work
   res.send(activePurchases);
 });
 
-app.get("/factories/:id/purchases/:purchaseId", checkRole(['Administrator', 'Manager', 'Worker']), (req, res) => {
+app.get("/factories/:id/purchases/:purchaseId", checkRole(['Administrator', 'Manager']), (req, res) => {
   const factory = data.find((f) => f.id === parseInt(req.params.id) && !f.deleted);
   if (!factory) {
     return res.status(404).send("Factory not found");
@@ -504,7 +543,7 @@ app.get("/factories/:id/purchases/:purchaseId", checkRole(['Administrator', 'Man
   res.send(purchase);
 });
 
-app.put("/factories/:id/purchases/:purchaseId", checkRole(['Administrator', 'Manager']), (req, res) => {
+app.put("/factories/:id/purchases/:purchaseId", checkRole(['Administrator', 'Manager', 'Customer']), (req, res) => {
   const factory = data.find((f) => f.id === parseInt(req.params.id) && !f.deleted);
   if (!factory) {
     return res.status(404).send("Factory not found");
@@ -514,21 +553,42 @@ app.put("/factories/:id/purchases/:purchaseId", checkRole(['Administrator', 'Man
     return res.status(404).send("Purchase not found");
   }
   const { status, comment } = req.body;
+
+  const username = req.headers['username'];
+  const user = users.find(u => u.username === username && !u.deleted);
+
+  if (user.role === 'Customer' && status !== "Cancelled") {
+    return res.status(403).send("Customers can only cancel their purchases");
+  }
+  
+  if (status === "Cancelled" && purchase.status !== "Processing") {
+    return res.status(400).send("Only purchases in Processing status can be cancelled");
+  }
+
+  if (status === "Rejected" && !comment) {
+    return res.status(400).send("Comment is required for rejected purchases");
+  }
+
   if (status === "Approved" || status === "Rejected") {
-    if (status === "Rejected" && !comment) {
-      return res.status(400).send("Comment is required for rejected purchases");
-    }
     if (status === "Rejected") {
       for (const item of purchase.chocolates) {
         const chocolate = factory.chocolates.find(c => c.id === item.chocolateId && !c.deleted);
         chocolate.quantity += item.quantity;
       }
     }
+  } else if (status === "Cancelled") {
+    for (const item of purchase.chocolates) {
+      const chocolate = factory.chocolates.find(c => c.id === item.chocolateId && !c.deleted);
+      chocolate.quantity += item.quantity;
+    }
+    user.points -= (purchase.totalPrice / 1000) * 133 * 4;
   }
+
   purchase.status = status;
   if (comment) purchase.comment = comment;
   saveData(data, './data/factories.json');
-  res.send("Purchase updated");
+  saveData(users, './data/users.json');
+  res.send("Purchase status updated");
 });
 
 app.delete("/factories/:id/purchases/:purchaseId", checkRole(['Customer']), (req, res) => {
@@ -556,12 +616,21 @@ app.delete("/factories/:id/purchases/:purchaseId", checkRole(['Customer']), (req
 });
 
 // Comments routes
-app.post("/factories/:id/comments", (req, res) => {
+app.post("/factories/:id/comments", checkRole(['Customer']), (req, res) => {
   const factory = data.find((f) => f.id === parseInt(req.params.id) && !f.deleted);
   if (!factory) {
     return res.status(404).send("Factory not found");
   }
-  const { username, text, rating } = req.body;
+
+  const username = req.headers['username'];
+  const user = users.find(u => u.username === username && !u.deleted);
+
+  const purchase = factory.purchases.find(p => p.username === username && p.status === "Approved");
+  if (!purchase) {
+    return res.status(403).send("Only customers who have made a purchase can comment");
+  }
+
+  const { text, rating } = req.body;
   if (rating && (rating < 1 || rating > 5)) {
     return res.status(400).send('Rating must be between 1 and 5');
   }
@@ -570,7 +639,7 @@ app.post("/factories/:id/comments", (req, res) => {
     username,
     text,
     rating: rating || null,
-    approved: false,
+    approved: "Pending",
     deleted: false,
   };
   factory.comments.push(newComment);
@@ -583,8 +652,15 @@ app.get("/factories/:id/comments", (req, res) => {
   if (!factory) {
     return res.status(404).send("Factory not found");
   }
-  const activeComments = factory.comments.filter((c) => !c.deleted);
-  res.send(activeComments);
+
+  const username = req.headers['username'];
+  const user = users.find(u => u.username === username && !u.deleted);
+
+  if (user.role === 'Manager' || user.role === 'Administrator') {
+    res.send(factory.comments.filter((c) => !c.deleted));
+  } else {
+    res.send(factory.comments.filter((c) => c.approved === "Approved" && !c.deleted));
+  }
 });
 
 app.get("/factories/:id/comments/:commentId", (req, res) => {
@@ -599,7 +675,7 @@ app.get("/factories/:id/comments/:commentId", (req, res) => {
   res.send(comment);
 });
 
-app.put("/factories/:id/comments/:commentId", checkRole(['Administrator', 'Manager']), (req, res) => {
+app.put("/factories/:id/comments/:commentId", checkRole(['Manager']), (req, res) => {
   const factory = data.find((f) => f.id === parseInt(req.params.id) && !f.deleted);
   if (!factory) {
     return res.status(404).send("Factory not found");
@@ -614,7 +690,7 @@ app.put("/factories/:id/comments/:commentId", checkRole(['Administrator', 'Manag
   }
   if (text) comment.text = text;
   if (rating) comment.rating = rating;
-  if (approved !== undefined) comment.approved = approved;
+  if (approved === "Rejected" || approved === "Approved") comment.approved = approved;
 
   saveData(data, './data/factories.json');
   res.send("Comment updated");
@@ -758,3 +834,5 @@ app.delete("/cart/:username/:factoryId/:chocolateId", checkRole(['Customer']), (
 app.listen(port, () => {
   console.log(`Server is running on http://localhost:${port}`);
 });
+
+export default app;
